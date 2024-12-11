@@ -6,6 +6,8 @@ import time
 import gemini
 import claud
 import openai
+import grok
+import llama
 
 async def main():
   if len(sys.argv) > 1:
@@ -16,21 +18,32 @@ async def main():
 
   start_time = time.time()
 
+  promises = []
   async with aiohttp.ClientSession() as session:
+    if False:
+      gemini_promise = gemini.ask(session, gemini.make_query(prompt))
+      promises.append(gemini_promise)
+    
+    if False:
+      claud_promise = claud.ask(session, claud.make_query(prompt))
+      promises.append(claud_promise)
+
+    if False:
+      openai_promise = openai.ask(session, openai.make_query(prompt))
+      promises.append(openai_promise)
+
+    if False:
+      grok_promise = grok.ask(session, grok.make_query(prompt))
+      promises.append(grok_promise)
+
     if True:
-      gemini_reply = await gemini.ask(session, gemini.make_query(prompt))
+      llama_promise = llama.ask(session, llama.make_query(prompt))
+      promises.append(llama_promise)
 
-      print(gemini_reply)
+    results = await asyncio.gather(*promises)
 
-    if True:
-      claud_reply = await claud.ask(session, claud.make_query(prompt))
-
-      print(claud_reply)
-
-    if True:
-      openai_reply = await openai.ask(session, openai.make_query(prompt))
-
-      print(openai_reply)
+    for result in results:
+      print(result)
 
   end_time = time.time()
   print(f"Time taken: {end_time - start_time:.2f} seconds")

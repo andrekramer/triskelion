@@ -1,4 +1,4 @@
-import support 
+import support
 
 gemini_api_key = support.read_file_as_string("gemini-api-key").strip()
 
@@ -14,5 +14,7 @@ async def ask(session, query):
   }
   async with session.post(url, data=query.encode(), headers=headers) as response:
     print(f"Fetched {url}: Status code {response.status}")
+    if response.status != 200:
+      return "{\"error\": " + str(response.status) + "}"
     return await response.text()
     
