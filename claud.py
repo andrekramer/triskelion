@@ -14,9 +14,5 @@ async def ask(session, query):
     "x-api-key": claud_api_key,
     "anthropic-version": "2023-06-01"
   }
-  async with session.post(url, data=query.encode(), headers=headers) as response:
-    print(f"Fetched {url}: Status code {response.status}")
-    if response.status != 200:
-      return "{\"error\": " + str(response.status) + "}"
-    return await response.text()
+  return await support.ask(url, session, query, headers)
 
