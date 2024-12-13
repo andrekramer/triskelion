@@ -15,10 +15,10 @@ import llama
 # Which models to query:
 schedule = {
   "gemini": True,
-  "claud": True,
-  "openai": True,
-  "grok": True,
-  "llama": True
+  "claud": False,
+  "openai": False,
+  "grok": False,
+  "llama": False
 }
 
 # Where in the json to find the text reply:
@@ -30,11 +30,26 @@ text_field = {
   "llama": "content"
 }
 
+# model versions to use for queries:
+models = {
+  "gemini": "gemini-1.5-flash-latest",
+  "claud": "claude-3-5-sonnet-20241022",
+  "openai": "gpt-4o",
+  "grok": "grok-beta",
+  "llama":  "llama3.3-70b"
+}
+
 # The order of results (skiping any not in schedule)
 order = ["gemini", "claud", "openai", "grok", "llama"]
 
+gemini.model = models["gemini"]
+claud.model = models["claud"]
+openai.model = models["openai"]
+grok.model = models["grok"]
+llama.model = models["llama"]
 
 async def main():
+  
   if len(sys.argv) > 1:
     prompt = sys.argv[1].replace("\n", "\\n");
   else:
