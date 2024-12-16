@@ -21,17 +21,8 @@ schedule = {
   "llama": True
 }
 
-# Where in the json to find the text reply
-text_field = {
-  "gemini": "text",
-  "claud": "text",
-  "openai": "content",
-  "grok": "content",
-  "llama": "content"
-}
-
 # model versions to use for queries
-models = {
+model_versions = {
   "gemini": "gemini-1.5-flash-latest",
   "claud": "claude-3-5-sonnet-20241022",
   "openai": "gpt-4o",
@@ -39,39 +30,25 @@ models = {
   "llama":  "llama3.3-70b"
 }
 
-# The order of responses (skiping any not in schedule)
-order = ["gemini", "claud", "openai", "grok", "llama"]
+# The models and order of responses (skiping any not in schedule)
+models = [gemini.Gemini, claud.Claud, openai.Openai, grok.Grok, llama.Llama]
 
 # Push down the model configuration to imported models
-gemini.model = models["gemini"]
-claud.model = models["claud"]
-openai.model = models["openai"]
-grok.model = models["grok"]
-llama.model = models["llama"]
+gemini.Gemini.model = model_versions["gemini"]
+claud.Claud.model = model_versions["claud"]
+openai.Openai.model = model_versions["openai"]
+grok.Grok.model = model_versions["grok"]
+llama.Llama.model = model_versions["llama"]
 
 async def multi_way_query(prompt):
   """Query the configured models in parallel and gather the responses. """
   promises = []
   async with aiohttp.ClientSession() as session:
-    if schedule["gemini"]:
-      gemini_promise = gemini.ask(session, gemini.make_query(prompt))
-      promises.append(gemini_promise)
-    
-    if schedule["claud"]:
-      claud_promise = claud.ask(session, claud.make_query(prompt))
-      promises.append(claud_promise)
 
-    if schedule["openai"]:
-      openai_promise = openai.ask(session, openai.make_query(prompt))
-      promises.append(openai_promise)
-
-    if schedule["grok"]:
-      grok_promise = grok.ask(session, grok.make_query(prompt))
-      promises.append(grok_promise)
-
-    if schedule["llama"]:
-      llama_promise = llama.ask(session, llama.make_query(prompt))
-      promises.append(llama_promise)
+    for model in models:
+      if schedule[model.name]:
+        promise = model.ask(session, model.make_query(prompt))
+        promises.append(promise)
 
     responses = await asyncio.gather(*promises)
   
@@ -84,34 +61,36 @@ def parse_responses(responses, display=False):
   """Parsing out the model specific text field. Display responses if display flag is True"""
   response_texts = []
   i = 0
-  for o in order:
-    if not schedule[o]:
-      if display: print("skiped " + o)
+  for model in models:
+    if not schedule[model.name]:
+      if display: print("skiped " + model.name)
       continue
-    print("model " + o)
+    print("model " + model.name)
     json_data = json.loads(responses[i])
     i += 1
     json_formatted_str = json.dumps(json_data, indent=2)
     print(json_formatted_str)
-    text = support.search_json(json_data, text_field[o])
-    if text != None:
+    text = support.search_json(json_data, model.text_field)
+    if text != None and text.strip() != "":
       if display: print(text)
       response_texts.append(text)
     else:
       if display: print("No text found")
+      response_texts.append("")
 
   return response_texts
 
 async def compare_three_way(response_texts):
-  """Compare the first 3 reult texts. Return None if no matches"""
-  if len(response_texts) < 3:
+  """Compare the first 3 non blank result texts. Return None if no matches"""
+  texts = [item for item in response_texts if item.strip() != ""]
+  if len(texts) < 3:
     print("Not enough responses to compare")
     return None
   
   # 3 way comparison is possible
-  alice = clean(response_texts[0])
-  bob = clean(response_texts[1])
-  eve = clean(response_texts[0])
+  alice = clean(texts[0])
+  bob = clean(texts[1])
+  eve = clean(texts[2])
 
   async with aiohttp.ClientSession() as session:
     pass
@@ -132,7 +111,7 @@ async def main():
 
   texts = parse_responses(responses, True)
 
-  compared_text = compare_three_way(texts)
+  compared_text = await compare_three_way(texts)
 
   if compared_text is not None:
     print("compared response")

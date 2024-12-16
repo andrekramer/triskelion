@@ -1,3 +1,5 @@
+class Model:
+    pass
 
 def make_openai_std_query(text, model):
   return  "{ \"model\": \"" + model + "\", \"messages\": [{\"role\": \"user\", \"content\": \"" + \
