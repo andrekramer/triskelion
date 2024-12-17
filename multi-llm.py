@@ -4,27 +4,9 @@ import aiohttp
 import time
 import json
 
-from config import schedule, model_versions
+from config import schedule, compare_instructions
+from config import models, comparison_models, configure
 import support
-
-from gemini import Gemini
-from claud import  Claud
-from openai import Openai
-from grok import Grok
-from llama import Llama
-
-# The models and order of responses (skiping any not in schedule). Need at least 3 different models for 3 way comparisons.
-models = [Gemini, Claud, Openai, Grok, Llama]
-
-comparison_models = [Gemini, Llama, Openai] # Need 3 models for 3-way. They can be the same model applied more than once.
-
-
-# Push down the model configuration to imported models
-Gemini.model = model_versions["gemini"]
-Claud.model = model_versions["claud"]
-Openai.model = model_versions["openai"]
-Grok.model = model_versions["grok"]
-Llama.model = model_versions["llama"]
 
 
 async def multi_way_query(prompt):
@@ -70,9 +52,6 @@ def parse_responses(responses, display=False):
   return response_texts
 
 
-compare_instructions = "\nCompare their two statements and say YES if they are equivalent. Otherwise say NO." + \
-                       " Make a functional comparison and ignore phrasing differences."
-  
 async def compare(session, model, comparison, verbose):
     query = model.make_query(clean(comparison))
     # print(query)
@@ -174,6 +153,8 @@ async def main():
   else:
     print("Usage: python3 multi-llm.py 3-way|2-way|1-way query")
     exit()
+
+  configure()
 
   start_time = time.time()
 
