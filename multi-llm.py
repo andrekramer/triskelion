@@ -4,6 +4,7 @@ import aiohttp
 import time
 import json
 
+from config import schedule, model_versions
 import support
 
 from gemini import Gemini
@@ -11,25 +12,6 @@ from claud import  Claud
 from openai import Openai
 from grok import Grok
 from llama import Llama
-
-
-# Which models to query
-schedule = {
-  "gemini": True,
-  "claud": False,
-  "openai": True,
-  "grok": False,
-  "llama": True
-}
-
-# model versions to use for queries
-model_versions = {
-  "gemini": "gemini-1.5-flash-latest",
-  "claud": "claude-3-5-sonnet-20241022",
-  "openai": "gpt-4o",
-  "grok": "grok-beta",
-  "llama":  "llama3.3-70b"
-}
 
 # The models and order of responses (skiping any not in schedule). Need at least 3 different models for 3 way comparisons.
 models = [Gemini, Claud, Openai, Grok, Llama]
@@ -110,7 +92,7 @@ async def compare(session, model, comparison, verbose):
     else:
       return False
 
-async def compare_two_way(response_texts, verbose=False):
+async def compare_one_way(response_texts, verbose=False):
   """Compare the first two non blank result texts. Return None if no matches"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 2:
@@ -132,10 +114,10 @@ async def compare_two_way(response_texts, verbose=False):
         return alice
     else:
         return None
+    
 
-
-async def compare_three_way(response_texts, verbose=False):
-  """Compare the first 3 non blank result texts. Return None if no matches"""
+async def compare_two_or_three_way(response_texts, two_way_only=False, verbose=False):
+  """Compare the first 3 non blank result texts 2 or 3 way. Return None if no matches"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 3:
     print("Not enough responses to compare")
@@ -167,6 +149,10 @@ async def compare_three_way(response_texts, verbose=False):
         if await compare(session, model, comparison2, verbose):
           return alice
         else:
+           
+           if two_way_only:
+             return None
+           
            comparison3 = "Bob says:\n" + bob + "\n" + \
                          "\nEve says:\n" + eve + "\n" + \
                          compare_instructions
@@ -178,7 +164,7 @@ async def compare_three_way(response_texts, verbose=False):
               return bob
           
     return None
-              
+
 
 async def main():
 
@@ -186,7 +172,7 @@ async def main():
     action = sys.argv[1]
     prompt = clean(sys.argv[2])
   else:
-    print("Usage: python3 multi-llm.py 3-way|2-way query")
+    print("Usage: python3 multi-llm.py 3-way|2-way|1-way query")
     exit()
 
   start_time = time.time()
@@ -197,10 +183,12 @@ async def main():
 
   compared_text = None
 
-  if action == "2-way":
-    compared_text = await compare_two_way(texts)
+  if action == "1-way":
+    compared_text = await compare_one_way(texts)
+  elif action == "2-way":
+    compared_text = await compare_two_or_three_way(texts, True)
   elif action == "3-way":
-    compared_text = await compare_three_way(texts)
+    compared_text = await compare_two_or_three_way(texts, False)
   else:
     print("unknown action " + action)
 
