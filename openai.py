@@ -18,3 +18,9 @@ class Openai(support.Model):
       "Authorization": "Bearer " + openai_api_key
     }
     return await support.ask(url, session, query, headers)
+
+# Example of a second model from a vendor
+class Openai2(Openai):
+  name = "openai2"
+  model = "chatgpt-4o-latest"
+  

@@ -204,6 +204,105 @@ async def compare_all_three(response_texts, verbose=False):
   
   return None
 
+def n_ways():
+  m = []
+  pairs = []
+  for model in models:
+    if schedule[model.name]:
+      m.append(model)
+  for i in range(len(m) - 1):
+    for j in range(i + 1, len(m)):
+      print(m[i].name + " <-> " + m[j].name)
+      pairs.append((m[i], m[j], False))
+  return pairs
+
+
+async def compare_n_way(response_texts, verbose=False):
+  run_models = []
+  response_map = {}
+  r = 0
+  for model in models:
+    if schedule[model.name]:
+      if verbose:
+        print("response_map " + model.name)
+        print(response_texts[r])
+      response_map[model.name] = response_texts[r]
+      run_models.append(model)
+      r += 1
+  
+  quorums = {}
+  promises = []
+  comparison_pairs = n_ways()
+  
+  async with aiohttp.ClientSession() as session:
+
+    for comparison_pair in comparison_pairs:
+      
+      comparison = "John (using " + comparison_pair[0].name + ") says:\n" + response_map[comparison_pair[0].name] + "\n" + \
+                   "\nJane (using " + comparison_pair[1].name + ") says:\n" + response_map[comparison_pair[1].name]+ "\n" + \
+                   compare_instructions
+      if verbose: print(clean(comparison))
+ 
+      comparison_model = None
+      for cm in comparison_models:
+        if cm.name != comparison_pair[0].name and cm.name != comparison_pair[1].name:
+          comparison_model = cm
+          break
+      if comparison_model is None:
+        raise "Couldn't find a comparison model to use"
+      else:
+        print("comparison model to use: " + comparison_model.name)
+
+      promise = compare(session, comparison_model, comparison, verbose)
+      promises.append(promise)
+
+    responses = await asyncio.gather(*promises)
+
+  r = 0
+  # go over the comparison results
+  for comparison in comparison_pairs:
+    model1, model2, compare_result = comparison
+    compare_result = responses[r] # record the updated boolean response
+    if verbose: print("quorum " + model1.name + " <--> " + model2.name + " result " + str(compare_result))
+    r += 1
+    if compare_result:
+      quorum = quorums.get(model1.name)
+      if quorum is None:
+        quorums[model1.name] = quorum = []
+      quorum.append(model2.name)
+      quorum = quorums.get(model2.name)
+      if quorum is None:
+        quorums[model2.name] = quorum = []
+      quorum.append(model1.name)
+  
+  # display the largest quorum (first if more than one with same size)
+  quorum = None
+  quorum_size = 0
+  model_count = 0
+  for model in models:
+    if schedule[model.name]:
+      model_count += 1
+      q = quorums.get(model.name)
+      if q is not None and len(q) > quorum_size:
+        quorum = model.name
+        quorum_size = len(q) + 1
+
+  if quorum is None:
+    print("No quorum found")
+  else:
+    print("quorum " + quorum + " of " + str(quorum_size))
+    q = quorums[quorum]
+    print(quorum)
+    for model_name in q:
+      print(model_name)
+    if quorum_size == model_count:
+      print("**concensus**")
+      return response_map[quorum]
+    elif quorum_size > model_count / 2:
+      print("**quorum majority achieved**")
+      return response_map[quorum]
+
+  return None
 
 async def main():
 
@@ -211,7 +310,7 @@ async def main():
     action = sys.argv[1]
     prompt = clean(sys.argv[2])
   else:
-    print("Usage: python3 multi-llm.py 3-way|2-way|1-way|3-all query")
+    print("Usage: python3 multi-llm.py 3-way|2-way|1-way|3-all|n-way query")
     exit()
 
   configure()
@@ -232,8 +331,10 @@ async def main():
     compared_text = await compare_two_or_three_way(texts, False)
   elif action == "3-all":
     compared_text = await compare_all_three(texts)
+  elif action == "n-way":
+    compared_text = await compare_n_way(texts, True)
   else:
-    print("unknown action " + action)
+    print("unknown compare action " + action)
 
   if compared_text is not None:
     print("compared response")
