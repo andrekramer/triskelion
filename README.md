@@ -16,4 +16,4 @@ e.g.
 python3 multi-llm.py 3-way "Who wrote The Great Gabsby?"    
 python3 multi-llm.py 1-way "What is \"The Magic Number Seven\" about?"   
 python3 multi-llm.py 2-way "toss a coin"   
-python3 multi-llm.py all "How many number ones did the Beatles have in the UK?"   
+python3 multi-llm.py 3-all "How many number ones did the Beatles have in the UK?"   

@@ -144,7 +144,7 @@ async def compare_two_or_three_way(response_texts, two_way_only=False, verbose=F
           
     return None
 
-async def compare_all(response_texts, verbose=False):
+async def compare_all_three(response_texts, verbose=False):
   """Compare the first 3 non blank result texts in parallel"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 3:
@@ -191,7 +191,7 @@ async def compare_all(response_texts, verbose=False):
   print("Bob and Eve " +  ("agree" if responses[2] else "disagree"))
 
   if all(responses):
-    print("concensus")
+    print("**concensus**")
 
   if responses[0]:
     return alice
@@ -211,7 +211,7 @@ async def main():
     action = sys.argv[1]
     prompt = clean(sys.argv[2])
   else:
-    print("Usage: python3 multi-llm.py 3-way|2-way|1-way|all query")
+    print("Usage: python3 multi-llm.py 3-way|2-way|1-way|3-all query")
     exit()
 
   configure()
@@ -230,8 +230,8 @@ async def main():
     compared_text = await compare_two_or_three_way(texts, True)
   elif action == "3-way":
     compared_text = await compare_two_or_three_way(texts, False)
-  elif action == "all":
-    compared_text = await compare_all(texts)
+  elif action == "3-all":
+    compared_text = await compare_all_three(texts)
   else:
     print("unknown action " + action)
 
