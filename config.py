@@ -5,7 +5,7 @@ from grok import Grok
 from llama import Llama, Llama2
 
 # The models and order of responses (skiping any not in schedule). Need at least 3 different models for 3 way comparisons.
-models = [Gemini, Claud, Openai, Openai2, Grok, Llama, Llama2]
+models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Llama, Llama2]
 
 comparison_models = [Gemini, Llama, Openai] # Need at least 3 models for 3-way. They can be the same model applied more than once.
 
