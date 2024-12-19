@@ -3,22 +3,29 @@ from claud import  Claud
 from openai import Openai, Openai2
 from grok import Grok
 from llama import Llama, Llama2
+from hugface import HugFace, HugFace2, HugFace3
 
 # The models and order of responses (skiping any not in schedule). Need at least 3 different models for 3 way comparisons.
-models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Llama, Llama2]
+# Order by preference for answers.
+models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Llama, Llama2, HugFace, HugFace2, HugFace3]
 
-comparison_models = [Gemini, Llama, Openai] # Need at least 3 models for 3-way. They can be the same model applied more than once.
+# The models to use for comparisons. Order by prefence for comparisons.
+# Need at least 3 models for 3-way. They can be the same model applied more than once.
+comparison_models = [Gemini, Openai, Grok] 
 
 # Which models to query
 schedule = {
-  "gemini": False,
-  "gemini2": True,
+  "gemini": True,
+  "gemini2": False,
   "claud": False,
   "openai": True,
   "openai2": False,
   "grok": False,
-  "llama": True,
-  "llama2": False
+  "llama": False,
+  "llama2": True,
+  "hugface": False,
+  "hugface2": False,
+  "hugface3": False
 }
 
 # model versions to use for queries
@@ -30,7 +37,10 @@ model_versions = {
   "openai2": "chatgpt-4o-latest",
   "grok": "grok-beta",
   "llama": "llama3.2-3b",
-  "llama2":  "llama3.3-70b"
+  "llama2": "llama3.3-70b",
+  "hugface": "google/gemma-2-2b-it",
+  "hugface2": "microsoft/Phi-3-mini-4k-instruct",
+  "hugface3": "Qwen/Qwen2.5-7B-Instruct"
 }
 
 def configure():
@@ -43,4 +53,6 @@ def configure():
   Grok.model = model_versions["grok"]
   Llama.model = model_versions["llama"]
   Llama2.model = model_versions["llama2"]
-
+  HugFace.model = model_versions["hugface"]
+  HugFace2.model = model_versions["hugface2"]
+  HugFace3.model = model_versions["hugface3"]

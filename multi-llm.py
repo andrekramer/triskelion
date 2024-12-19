@@ -11,15 +11,19 @@ from comparison import make_comparison
 
 debug = False
 
-async def multi_way_query(prompt):
+async def multi_way_query(prompt, max_models = 10):
   """Query the configured models in parallel and gather the responses. """
   promises = []
   async with aiohttp.ClientSession() as session:
 
+    i = 0
     for model in models:
       if schedule[model.name]:
         promise = model.ask(session, model.make_query(prompt))
         promises.append(promise)
+        i += 1
+        if i == max_models:
+          break
 
     responses = await asyncio.gather(*promises)
   
@@ -40,7 +44,6 @@ def parse_responses(responses, display=False):
       continue
     if display: print("model " + model.name)
     json_data = json.loads(responses[i])
-    i += 1
     json_formatted_str = json.dumps(json_data, indent=2)
     if debug: print(json_formatted_str)
     text = support.search_json(json_data, model.text_field)
@@ -50,7 +53,9 @@ def parse_responses(responses, display=False):
     else:
       if display: print("No response text found")
       response_texts.append("")
-
+    i += 1
+    if i == len(responses):
+      break
   return response_texts
 
 
@@ -291,20 +296,16 @@ async def compare_n_way(prompt, response_texts, verbose=False):
 
   return None
 
-async def main():
 
-  if len(sys.argv) > 2:
-    action = sys.argv[1]
-    prompt = clean(sys.argv[2])
+async def run_comparison(prompt, action):
+  if action == "1-way":
+    max_models = 2
+  elif action in ["2-way", "3-way", "3-all"]:
+    max_models = 3
   else:
-    print("Usage: python3 multi-llm.py 3-way|2-way|1-way|3-all|n-way query")
-    exit()
+    max_models = 10
 
-  configure()
-
-  start_time = time.time()
-
-  responses = await multi_way_query(prompt)
+  responses = await multi_way_query(prompt, max_models)
 
   texts = parse_responses(responses, True)
 
@@ -320,14 +321,67 @@ async def main():
     compared_text = await compare_all_three(prompt, texts)
   elif action == "n-way":
     compared_text = await compare_n_way(prompt, texts, True)
+  elif action == "none":
+    return
   else:
     print("unknown compare action " + action)
+    return
 
   if compared_text is not None:
     print("compared response")
     print(compared_text)
   else:
     print("comparison FAIL")
+
+
+async def main():
+
+  if len(sys.argv) > 2:
+    action = sys.argv[1]
+    prompt = clean(sys.argv[2])
+  else:
+    print(
+"""Usage: python3 multi-llm.py 3-way|2-way|1-way|none|3-all|n-way query
+          -- use query as a prompt for multiple models and perform a comparison.
+             1-way compare two responses
+             2-way compare first response with second and third response
+             3-way compare three responses to see if any two agree
+             3-all compare three responses all ways
+             n-way compare all the responses each way
+             none can be used to just query and not do a comparison
+             
+          python3 multi-llm.py xyz input
+          -- read input until EOF (Ctrl-D) and use the read input as the prompt with xyz comparison action
+
+          python3 multi-llm.py xyz interactive
+          --- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye"
+          """)
+    exit()
+
+  configure()
+
+  if prompt == "interactive": 
+    while True:
+      prompt = input("prompt>")
+      p = prompt.strip()
+      if p == "":
+        continue
+      if p == "bye":
+        break
+      start_time = time.time()
+
+      await run_comparison(prompt, action)
+
+      end_time = time.time()
+      print(f"Time taken: {end_time - start_time:.2f} seconds")
+    return
+  
+  if prompt == "input":
+    prompt = sys.stdin.read()
+  
+  start_time = time.time()
+
+  await run_comparison(prompt, action)
 
   end_time = time.time()
   print(f"Time taken: {end_time - start_time:.2f} seconds")
