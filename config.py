@@ -1,4 +1,4 @@
-from gemini import Gemini
+from gemini import Gemini, Gemini2
 from claud import  Claud
 from openai import Openai, Openai2
 from grok import Grok
@@ -11,7 +11,8 @@ comparison_models = [Gemini, Llama, Openai] # Need at least 3 models for 3-way. 
 
 # Which models to query
 schedule = {
-  "gemini": True,
+  "gemini": False,
+  "gemini2": True,
   "claud": False,
   "openai": True,
   "openai2": False,
@@ -23,6 +24,7 @@ schedule = {
 # model versions to use for queries
 model_versions = {
   "gemini": "gemini-1.5-flash-latest",
+  "gemini2": "gemini-2.0-flash-exp",
   "claud": "claude-3-5-sonnet-20241022",
   "openai": "gpt-4o",
   "openai2": "chatgpt-4o-latest",
@@ -32,8 +34,9 @@ model_versions = {
 }
 
 def configure():
-  # Push down the model configuration to imported models
+  # Push down the model configuration to imported models to reflect any changes above.
   Gemini.model = model_versions["gemini"]
+  Gemini2.model = model_versions["gemini2"]
   Claud.model = model_versions["claud"]
   Openai.model = model_versions["openai"]
   Openai2.model = model_versions["openai2"]

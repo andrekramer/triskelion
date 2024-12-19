@@ -17,3 +17,7 @@ class Gemini(support.Model):
     }
     return await support.ask(url, session, query, headers)
   
+  
+class Gemini2(Gemini):
+  name = "gemini2"
+  model = "gemini-2.0-flash-exp"
