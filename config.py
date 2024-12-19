@@ -29,11 +29,6 @@ model_versions = {
   "llama":  "llama3.3-70b"
 }
 
-compare_instructions = "\nCompare their two statements and say YES if they are equivalent. Otherwise say NO." + \
-                       " Make a functional comparison and ignore phrasing differences." + \
-                       " Additional information provided by one statement does not matter unless it contracts the other statement."
-
-
 def configure():
   # Push down the model configuration to imported models
   Gemini.model = model_versions["gemini"]

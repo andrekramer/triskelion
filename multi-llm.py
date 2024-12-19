@@ -4,7 +4,7 @@ import aiohttp
 import time
 import json
 
-from config import schedule, compare_instructions
+from config import schedule
 from config import models, comparison_models, configure
 import support
 from comparison import make_comparison
