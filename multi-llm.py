@@ -9,6 +9,7 @@ from config import models, comparison_models, configure
 import support
 from comparison import make_comparison
 
+debug = False
 
 async def multi_way_query(prompt):
   """Query the configured models in parallel and gather the responses. """
@@ -41,7 +42,7 @@ def parse_responses(responses, display=False):
     json_data = json.loads(responses[i])
     i += 1
     json_formatted_str = json.dumps(json_data, indent=2)
-    # print(json_formatted_str)
+    if debug: print(json_formatted_str)
     text = support.search_json(json_data, model.text_field)
     if text != None and text.strip() != "":
       if display: print(text)
@@ -55,12 +56,12 @@ def parse_responses(responses, display=False):
 
 async def compare(session, model, comparison, verbose):
   query = model.make_query(clean(comparison))
-  # if verbose: print(query)
+  if debug: print(query)
   response = await model.ask(session, query)
   json_data = json.loads(response)
   if verbose:
     json_formatted_str = json.dumps(json_data, indent=2)
-    # if verbose: print(json_formatted_str)
+    if debug: print(json_formatted_str)
   text = support.search_json(json_data, model.text_field)
   if text is None:
     if verbose: print("comparison failed")
@@ -123,7 +124,6 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only=False, v
         if await compare(session, model, comparison2, verbose):
           return alice
         else:
-           
            if two_way_only:
              return None
            
@@ -210,11 +210,11 @@ async def compare_n_way(prompt, response_texts, verbose=False):
   r = 0
   for model in models:
     if schedule[model.name]:
-      if verbose:
+      if debug:
         print("response from " + model.name)
         print(response_texts[r])
-      response_map[model.name] = response_texts[r]
       run_models.append(model)
+      response_map[model.name] = response_texts[r]
       r += 1
   
   quorums = {}
@@ -224,7 +224,6 @@ async def compare_n_way(prompt, response_texts, verbose=False):
   async with aiohttp.ClientSession() as session:
 
     for comparison_pair in comparison_pairs:
-      
       comparison = make_comparison(prompt, 
                                    "John (using " + comparison_pair[0].name + ")",
                                    response_map[comparison_pair[0].name],
@@ -268,13 +267,12 @@ async def compare_n_way(prompt, response_texts, verbose=False):
   quorum = None
   quorum_size = 0
   model_count = 0
-  for model in models:
-    if schedule[model.name]:
-      model_count += 1
-      q = quorums.get(model.name)
-      if q is not None and len(q) > quorum_size:
-        quorum = model.name
-        quorum_size = len(q) + 1
+  for model in run_models:
+    model_count += 1
+    q = quorums.get(model.name)
+    if q is not None and len(q) > quorum_size:
+      quorum = model.name
+      quorum_size = len(q) + 1
 
   if quorum is None:
     print("No quorum found")

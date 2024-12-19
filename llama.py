@@ -6,7 +6,7 @@ url = "https://api.llama-api.com/chat/completions"
 
 class Llama(support.Model):
   name = "llama"
-  model = "llama3.3-70b"
+  model = "llama3.2-3b"
   
   text_field = "content"
 
@@ -19,4 +19,8 @@ class Llama(support.Model):
       "Authorization": "Bearer " + llama_api_key
     }
     return await support.ask(url, session, query, headers)
-    
+  
+class Llama2(Llama):
+  name = "llama2"
+  model = "llama3.3-70b"
+  
