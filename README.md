@@ -1,18 +1,21 @@
+## Query and compare multiple LLM models
+
 Work in Progress   
 
 Please see https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models   
 
-Query multiple LLMs and compare results to suppress model errors.   
-The models to use and comparison action are configurable (see config.py).   
+Query multiple LLMs and compare results to help suppress model errors.   
+The models to use and comparison action are configurable (see config.py, comparison.py).   
 Different flavous of comparisons are possible. 3-way is probaly the sweet spot.   
 
 Use py-install script to install dependencies.   
-Create files with api keys for the models: claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key  
+Create files with api keys for the models: claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key   
+You need 3 models configrued to mask one error (e.g. using 3-way).   
 
 Usage:   
 python3 multi-llm.py 3-way|2-way|1-way prompt   
 
-e.g.  
+e.g.   
 python3 multi-llm.py 3-way "Who wrote The Great Gabsby?"    
 python3 multi-llm.py 1-way "What is \"The Magic Number Seven\" about?"   
 python3 multi-llm.py 2-way "toss a coin"   
