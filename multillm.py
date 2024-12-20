@@ -11,6 +11,10 @@ from comparison import make_comparison
 
 debug = False
 
+def display(buffer, text):
+  print(text)
+  buffer.append(text)
+
 async def multi_way_query(prompt, max_models = 10):
   """Query the configured models in parallel and gather the responses. """
   promises = []
@@ -34,24 +38,24 @@ def clean(str):
   str2 = str1.replace('"', '\\"')
   return str2
 
-def parse_responses(responses, display=False):
+def parse_responses(responses, buffer, verbose=False):
   """Parsing out the model specific text field. Display responses if display flag is True"""
   response_texts = []
   i = 0
   for model in models:
     if not schedule[model.name]:
-      if display: print("skiped " + model.name)
+      if verbose: display(buffer, "skiped " + model.name)
       continue
-    if display: print("model " + model.name)
+    if verbose: display(buffer, "model " + model.name)
     json_data = json.loads(responses[i])
     json_formatted_str = json.dumps(json_data, indent=2)
     if debug: print(json_formatted_str)
     text = support.search_json(json_data, model.text_field)
     if text != None and text.strip() != "":
-      if display: print(text)
+      if verbose: display(buffer, text)
       response_texts.append(text)
     else:
-      if display: print("No response text found")
+      if verbose: display(buffer, "No response text found!")
       response_texts.append("")
     i += 1
     if i == len(responses):
@@ -59,7 +63,7 @@ def parse_responses(responses, display=False):
   return response_texts
 
 
-async def compare(session, model, comparison, verbose):
+async def compare(session, model, comparison, buffer, verbose = False):
   query = model.make_query(clean(comparison))
   if debug: print(query)
   response = await model.ask(session, query)
@@ -69,27 +73,27 @@ async def compare(session, model, comparison, verbose):
     if debug: print(json_formatted_str)
   text = support.search_json(json_data, model.text_field)
   if text is None:
-    if verbose: print("comparison failed")
+    if verbose: display(buffer, "comparison failed")
     return False
-  if verbose: print("comparison result:\n" + text)
+  if verbose: display(buffer, "comparison result:\n" + text)
 
   if text.find("YES") != -1 and not text.find("NO") != -1:
     return True
   else:
     return False
 
-async def compare_one_way(prompt, response_texts, verbose=False):
+async def compare_one_way(prompt, response_texts, buffer, verbose = False):
   """Compare the first two non blank result texts. Return None if no matches"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 2:
-    print("Not enough responses to compare")
+    display(buffer, "Not enough responses to compare")
     return None
   
   alice = texts[0]
   bob = texts[1]
 
   comparison = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: print(clean(comparison))
+  if verbose: display(buffer, comparison)
 
   async with aiohttp.ClientSession() as session:
     model = comparison_models[0]
@@ -100,11 +104,11 @@ async def compare_one_way(prompt, response_texts, verbose=False):
         return None
     
 
-async def compare_two_or_three_way(prompt, response_texts, two_way_only=False, verbose=False):
+async def compare_two_or_three_way(prompt, response_texts, two_way_only, buffer, verbose = False):
   """Compare the first 3 non blank result texts 2 or 3 way. Return None if no matches"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 3:
-    print("Not enough responses to compare")
+    display(buffer, "Not enough responses to compare")
     return None
   
   # 3 way comparison is possible
@@ -113,7 +117,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only=False, v
   eve = texts[2]
 
   comparison1 =  make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: print(clean(comparison1))
+  if verbose: display(buffer, comparison1)
 
   async with aiohttp.ClientSession() as session:
     model = comparison_models[0]
@@ -122,7 +126,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only=False, v
         return alice
     else:
         comparison2 =  make_comparison(prompt, "Alice", alice, "Eve", eve)
-        if verbose: print(clean(comparison2))
+        if verbose: display(buffer, comparison2)
 
         model = comparison_models[1]
 
@@ -133,7 +137,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only=False, v
              return None
            
            comparison3 =  make_comparison(prompt, "Bob", bob, "Eve", eve)
-           if verbose: print(clean(comparison3))
+           if verbose: display(buffer, comparison3)
 
            model = comparison_models[2]
 
@@ -142,11 +146,11 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only=False, v
           
     return None
 
-async def compare_all_three(prompt, response_texts, verbose=False):
+async def compare_all_three(prompt, response_texts, buffer, verbose=False):
   """Compare the first 3 non blank result texts in parallel"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 3:
-    print("Not enough responses to compare")
+    display(buffer, "Not enough responses to compare")
     return None
  
   alice = texts[0]
@@ -154,13 +158,13 @@ async def compare_all_three(prompt, response_texts, verbose=False):
   eve = texts[2]
 
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: print(clean(comparison1))
+  if verbose: display(buffer, comparison1)
 
   comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
-  if verbose: print(clean(comparison2))
+  if verbose: display(buffer, comparison2)
   
   comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
-  if verbose: print(clean(comparison3))
+  if verbose: display(buffer, comparison3)
  
   async with aiohttp.ClientSession() as session:
     promises = []
@@ -179,25 +183,23 @@ async def compare_all_three(prompt, response_texts, verbose=False):
     responses = await asyncio.gather(*promises)
 
   if verbose:
-    print("Alice and Bob " +  ("agree" if responses[0] else "disagree"))
-    print("Alice and Eve " +  ("agree" if responses[1] else "disagree"))
-    print("Bob and Eve " +  ("agree" if responses[2] else "disagree"))
+    display(buffer, "Alice and Bob " +  ("agree" if responses[0] else "disagree"))
+    display(buffer, "Alice and Eve " +  ("agree" if responses[1] else "disagree"))
+    display(buffer, "Bob and Eve " +  ("agree" if responses[2] else "disagree"))
 
   if all(responses):
-    print("**concensus**")
+    display(buffer, "**concensus**")
 
   if responses[0]:
     return alice
-  
   if responses[1]:
     return alice
-  
   if responses[2]:
     return bob
   
   return None
 
-def n_ways():
+def n_ways(buffer, verbose=False):
   m = []
   pairs = []
   for model in models:
@@ -205,11 +207,11 @@ def n_ways():
       m.append(model)
   for i in range(len(m) - 1):
     for j in range(i + 1, len(m)):
-      print(m[i].name + " <-> " + m[j].name)
+      if verbose: display(buffer, m[i].name + " <-> " + m[j].name)
       pairs.append((m[i], m[j], False))
   return pairs
 
-async def compare_n_way(prompt, response_texts, verbose=False):
+async def compare_n_way(prompt, response_texts, buffer, verbose=False):
   run_models = []
   response_map = {}
   r = 0
@@ -224,7 +226,7 @@ async def compare_n_way(prompt, response_texts, verbose=False):
   
   quorums = {}
   promises = []
-  comparison_pairs = n_ways()
+  comparison_pairs = n_ways(buffer, True)
   
   async with aiohttp.ClientSession() as session:
 
@@ -234,7 +236,7 @@ async def compare_n_way(prompt, response_texts, verbose=False):
                                    response_map[comparison_pair[0].name],
                                    "Jane (using " + comparison_pair[1].name + ")",
                                    response_map[comparison_pair[1].name])
-      if verbose: print(clean(comparison))
+      if verbose: display(buffer, comparison)
  
       comparison_model = None
       for cm in comparison_models:
@@ -242,9 +244,9 @@ async def compare_n_way(prompt, response_texts, verbose=False):
           comparison_model = cm
           break
       if comparison_model is None:
-        raise "Couldn't find a comparison model to use"
+        raise "Couldn't find a comparison model to use for n-way comparison"
       else:
-        if verbose: print("comparison model to use: " + comparison_model.name)
+        if verbose: display(buffer, "comparison model to use: " + comparison_model.name)
 
       promise = compare(session, comparison_model, comparison, verbose)
       promises.append(promise)
@@ -256,7 +258,7 @@ async def compare_n_way(prompt, response_texts, verbose=False):
   for comparison in comparison_pairs:
     model1, model2, compare_result = comparison
     compare_result = responses[r] # record the updated boolean response
-    if verbose: print("quorum " + model1.name + " <--> " + model2.name + " result " + str(compare_result))
+    if verbose: display(buffer, "quorum " + model1.name + " <--> " + model2.name + " result " + str(compare_result))
     r += 1
     if compare_result:
       quorum = quorums.get(model1.name)
@@ -280,24 +282,28 @@ async def compare_n_way(prompt, response_texts, verbose=False):
       quorum_size = len(q) + 1
 
   if quorum is None:
-    print("No quorum found")
+    if verbose: display(buffer, "No quorum found. All disagree.")
   else:
-    print("quorum " + quorum + " of " + str(quorum_size))
+    if verbose: display(buffer, "quorum " + quorum + " of " + str(quorum_size))
     q = quorums[quorum]
-    print(quorum)
+    if verbose: display(buffer, quorum)
     for model_name in q:
-      print(model_name)
+      if verbose: display(buffer, model_name)
     if quorum_size == model_count:
-      print("**concensus**")
+      if verbose: display(buffer, "**concensus**")
       return response_map[quorum]
     elif quorum_size > model_count / 2:
-      print("**quorum majority achieved**")
+      if verbose: display(buffer, "**quorum majority achieved**")
       return response_map[quorum]
+    elif quorum_size == 2:
+       if verbose: display(buffer, "Two agree")
 
   return None
 
 
 async def run_comparison(prompt, action):
+  buffer = []
+
   if action == "1-way":
     max_models = 2
   elif action in ["2-way", "3-way", "3-all"]:
@@ -307,32 +313,41 @@ async def run_comparison(prompt, action):
 
   responses = await multi_way_query(prompt, max_models)
 
-  texts = parse_responses(responses, True)
+  texts = parse_responses(responses, buffer, True)
 
   compared_text = None
 
   if action == "1-way":
-    compared_text = await compare_one_way(prompt, texts)
+    compared_text = await compare_one_way(prompt, texts, buffer, True)
   elif action == "2-way":
-    compared_text = await compare_two_or_three_way(prompt, texts, True)
+    compared_text = await compare_two_or_three_way(prompt, texts, True, buffer, True)
   elif action == "3-way":
-    compared_text = await compare_two_or_three_way(prompt, texts, False)
+    compared_text = await compare_two_or_three_way(prompt, texts, False, buffer, True)
   elif action == "3-all":
-    compared_text = await compare_all_three(prompt, texts)
+    compared_text = await compare_all_three(prompt, texts, buffer, True)
   elif action == "n-way":
-    compared_text = await compare_n_way(prompt, texts, True)
+    compared_text = await compare_n_way(prompt, texts, buffer, True)
   elif action == "none":
-    return
+    return buffer
   else:
-    print("unknown compare action " + action)
-    return
+    display(buffer, "unknown compare action " + action)
+    return buffer
 
   if compared_text is not None:
-    print("compared response")
-    print(compared_text)
+    display(buffer, "compared response")
+    display(buffer, compared_text)
   else:
-    print("comparison FAIL")
+    display(buffer, "comparison FAIL")
 
+  return buffer
+
+async def timed_comparison(prompt, action):
+  start_time = time.time()
+
+  await run_comparison(prompt, action)
+
+  end_time = time.time()
+  print(f"Time taken: {end_time - start_time:.2f} seconds")
 
 async def main():
 
@@ -341,7 +356,7 @@ async def main():
     prompt = clean(sys.argv[2])
   else:
     print(
-"""Usage: python3 multi-llm.py 3-way|2-way|1-way|none|3-all|n-way query
+"""Usage: python3 multillm.py 3-way|2-way|1-way|none|3-all|n-way query
           -- use query as a prompt for multiple models and perform a comparison.
              1-way compare two responses
              2-way compare first response with second and third response
@@ -349,11 +364,11 @@ async def main():
              3-all compare three responses all ways
              n-way compare all the responses each way
              none can be used to just query and not do a comparison
-             
-          python3 multi-llm.py xyz input
+
+          python3 multillm.py xyz input
           -- read input until EOF (Ctrl-D) and use the read input as the prompt with xyz comparison action
 
-          python3 multi-llm.py xyz interactive
+          python3 multillm.py xyz interactive
           --- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye"
           """)
     exit()
@@ -368,23 +383,14 @@ async def main():
         continue
       if p == "bye":
         break
-      start_time = time.time()
-
-      await run_comparison(prompt, action)
-
-      end_time = time.time()
-      print(f"Time taken: {end_time - start_time:.2f} seconds")
+      
+      await timed_comparison(prompt, action)
     return
   
   if prompt == "input":
     prompt = sys.stdin.read()
   
-  start_time = time.time()
-
-  await run_comparison(prompt, action)
-
-  end_time = time.time()
-  print(f"Time taken: {end_time - start_time:.2f} seconds")
+  await timed_comparison(prompt, action)
 
 if __name__ == "__main__":
   asyncio.run(main())

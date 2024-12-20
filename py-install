@@ -2,4 +2,6 @@ python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install requests
 pip install aoihttp
-python3 multi-llm.py 
+pip install Flask
+pip install 'flask[async]'
+python3 multillm.py 

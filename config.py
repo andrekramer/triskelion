@@ -13,19 +13,22 @@ models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Llama, Llama2, HugFace,
 # Need at least 3 models for 3-way. They can be the same model applied more than once.
 comparison_models = [Gemini, Openai, Grok] 
 
+T = True
+F = False
+
 # Which models to query
 schedule = {
-  "gemini": True,
-  "gemini2": False,
-  "claud": False,
-  "openai": True,
-  "openai2": False,
-  "grok": False,
-  "llama": False,
-  "llama2": True,
-  "hugface": False,
-  "hugface2": False,
-  "hugface3": False
+  "gemini": T,
+  "gemini2": F,
+  "claud": F,
+  "openai": T,
+  "openai2": F,
+  "grok": T,
+  "llama": F,
+  "llama2": F,
+  "hugface": F,
+  "hugface2": F,
+  "hugface3": F
 }
 
 # model versions to use for queries
