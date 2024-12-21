@@ -12,15 +12,16 @@ app = Flask(__name__)
 async def index():
     if request.method == "POST":
         input_text = request.form["text_input"]  # Get the text from the form
+        if input_text is None or input_text.strip() == "":
+            return render_template("index.html")
         response_lines = await process_text(input_text) # process the text
-        return render_template("index.html", response=response_lines) # Render the HTML page
+        return render_template("index.html", response=response_lines, prompt=input_text) # Render the HTML page
     return render_template("index.html") # renders the page on a GET request
 
 
 async def process_text(text):
-  result = await run_comparison(text, "n-way")
-  if True: return result
-  return [f"You entered: '{text}'.", "Here's another line of text!", "And another!"]
+  result = await run_comparison(text, "n-way") # respond with a list of strings
+  return result
 
 if __name__ == "__main__":
     app.run(debug=False)

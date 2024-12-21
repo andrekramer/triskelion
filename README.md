@@ -10,7 +10,7 @@ Different flavous of comparisons are possible. 3-way is probaly the sweet spot.
 
 Use py-install script to install dependencies.   
 Create files with api keys for the models: claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key  
-You need 3 models configrued to mask one error (e.g. using 3-way). 
+You need 3 models configrued to mask one error (e.g. using 3-way).   
 Hint: You can use 3 models from HuggingFace by editing the config and set the other api keys to dummy values.
 
 Usage:   
@@ -27,6 +27,7 @@ python3 multillm.py n-way "What is the longest river on Mars?"
              1-way compare two responses
              2-way compare first response with second and third response
              3-way compare three responses to see if any two agree
+             2-1 compare 2 responses and go on to a third if first two disagree
              3-all compare three responses all ways
              n-way compare all the responses each way
              :none can be used to just query and not do a comparison
@@ -37,11 +38,11 @@ python3 multillm.py xyz input
 python3 multillm.py xyz interactive
 --- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye"
 
-Run as a Web app:
+Run as a Web app:  
 
-Install Flash with the steps in py-install file.
+Install Flash with the steps in py-install file.  
 
-python3 app.py
+python3 app.py   
 
-Browse to http://127.0.0.1:5000/
+Browse to http://127.0.0.1:5000/   
 
