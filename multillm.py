@@ -14,6 +14,15 @@ debug = False
 def get_comparison_model(i):
   return comparison_models[i % len(comparison_models)]
 
+def get_model(i):
+  for model in models:
+     if not schedule[model.name]:
+       continue
+     if i == 0:
+       return model
+     else:
+        i -= 1
+
 def display(trail, text):
   print(text)
   trail.append(text)
@@ -76,9 +85,9 @@ async def compare(session, model, comparison, trail, verbose = False):
     if debug: print(json_formatted_str)
   text = support.search_json(json_data, model.text_field)
   if text is None:
-    if verbose: display(trail, "comparison failed")
+    if verbose: display(trail, f"comparison using {model.name} failed!")
     return False
-  if verbose: display(trail, "comparison result:\n" + text)
+  if verbose: display(trail, f"comparison using {model.name} result:\n" + text)
 
   if text.find("YES") != -1 and not text.find("NO") != -1:
     return True
@@ -102,6 +111,7 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
     model = get_comparison_model(0)
 
     if await compare(session, model, comparison, verbose):
+        if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
         return alice
     else:
         return None
@@ -111,7 +121,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
   """Compare the first 3 non blank result texts 2 or 3 way. Return None if no matches"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 3:
-    display(trail, "Not enough responses to compare")
+    display(trail, "Not enough responses to compare!")
     return None
   
   # 3 way comparison is possible
@@ -124,16 +134,19 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
 
   async with aiohttp.ClientSession() as session:
     model = get_comparison_model(0)
-
+    if verbose: display(trail, "Compare using " + model.name)
     if await compare(session, model, comparison1, verbose):
+        if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
         return alice
     else:
         comparison2 =  make_comparison(prompt, "Alice", alice, "Eve", eve)
         if verbose: display(trail, comparison2)
 
         model = get_comparison_model(1)
+        if verbose: display(trail, "Compare using " + model.name)
 
         if await compare(session, model, comparison2, verbose):
+          if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
           return alice
         else:
            if two_way_only:
@@ -143,17 +156,19 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
            if verbose: display(trail, comparison3)
 
            model = get_comparison_model(2)
+           if verbose: display(trail, "Compare using " + model.name)
 
            if await compare(session, model, comparison3, verbose):
+              if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(1).name}")
               return bob
-          
+
     return None
 
 async def compare_all_three(prompt, response_texts, trail, verbose=False):
   """Compare the first 3 non blank result texts in parallel"""
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 3:
-    display(trail, "Not enough responses to compare")
+    display(trail, "Not enough responses to compare!")
     return None
  
   alice = texts[0]
@@ -161,13 +176,19 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
   eve = texts[2]
 
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: display(trail, comparison1)
+  if verbose: 
+    display(trail, "Alice and Bob")
+    display(trail, comparison1)
 
   comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
-  if verbose: display(trail, comparison2)
+  if verbose: 
+    display(trail, "Alice and Eve")
+    display(trail, comparison2)
   
   comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
-  if verbose: display(trail, comparison3)
+  if verbose: 
+    display(trail, "Bob and Eve")
+    display(trail, comparison3)
  
   async with aiohttp.ClientSession() as session:
     promises = []
@@ -207,7 +228,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   """Compare 2 non blank result texts first and only use a third if first 3 disagree """
   texts = [item for item in response_texts if item.strip() != ""]
   if len(texts) < 2:
-    display(trail, "Not enough responses to compare")
+    display(trail, "Not enough responses to compare!")
     return None
  
   alice = texts[0]
@@ -219,9 +240,10 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   async with aiohttp.ClientSession() as session:
    
     model = get_comparison_model(0)
+    if verbose: display(trail, "Compare first two responses using " + model.name)
     response = await compare(session, model, comparison1, verbose)
     if response:
-      display(trail, "first two models agree")
+      display(trail, f"first two models agree, can use {get_model(0).name}")
       return alice
     
     # Get 3rd model text
@@ -230,7 +252,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     for model in models:
       if schedule[model.name]:
         if i == 2:
-          display(trail, "query next model " + model.name)
+          display(trail, "Query next model " + model.name)
           text3 = await model.ask(session, model.make_query(prompt))
           text3 = text3.strip()
           break
@@ -238,7 +260,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
           i += 1
 
     if text3 == "":
-      display(trail, "3rd model failed to answer so FAIL")
+      display(trail, "3rd model failed to answer!")
       return None
     
     eve = text3
@@ -246,21 +268,23 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     if verbose: display(trail, comparison2)
   
     model = get_comparison_model(1)
+    if verbose: display(trail, "Compare first and third using " + model.name)
     response = await compare(session, model, comparison2, verbose)
     if response:
-      display(trail, "first and third agree")
+      display(trail, f"first and third agree, can use {get_model(0).name}")
       return alice
   
     comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
     if verbose: display(trail, comparison3)
 
     model = get_comparison_model(2)
+    if verbose: display(trail, "Compare second and third using " + model.name)
     response = await compare(session, model, comparison3, verbose)
     if response:
-     display(trail, "second and third agree")
+     display(trail, f"second and third agree, can use {get_model(1).name}")
     return bob
   
-  display(trail, "none agree FAIL")
+  display(trail, "none agree")
   return None
    
 
@@ -275,6 +299,7 @@ def n_ways(trail, verbose=False):
       if verbose: display(trail, m[i].name + " <-> " + m[j].name)
       pairs.append((m[i], m[j], False))
   return pairs
+
 
 async def compare_n_way(prompt, response_texts, trail, verbose=False):
   run_models = []
@@ -311,7 +336,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
       if comparison_model is None:
         raise "Couldn't find a comparison model to use for n-way comparison"
       else:
-        if verbose: display(trail, "comparison model to use: " + comparison_model.name)
+        if verbose: display(trail, "comparison model selected: " + comparison_model.name)
 
       promise = compare(session, comparison_model, comparison, verbose)
       promises.append(promise)
@@ -323,7 +348,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   for comparison in comparison_pairs:
     model1, model2, compare_result = comparison
     compare_result = responses[r] # record the updated boolean response
-    if verbose: display(trail, "quorum " + model1.name + " <--> " + model2.name + " result " + str(compare_result))
+    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " result " + str(compare_result))
     r += 1
     if compare_result:
       quorum = quorums.get(model1.name)
@@ -361,7 +386,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
       if verbose: display(trail, "**quorum majority achieved**")
       return response_map[quorum]
     elif quorum_size == 2:
-       if verbose: display(trail, "Two agree")
+       if verbose: display(trail, "two agree")
 
   return None
 
@@ -401,10 +426,10 @@ async def run_comparison(prompt, action):
     return trail
 
   if compared_text is not None:
-    display(trail, "compared response")
+    display(trail, "PASS compared response")
     display(trail, compared_text)
   else:
-    display(trail, "comparison FAIL")
+    display(trail, "FAIL comparison")
 
   return trail
 
