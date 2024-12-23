@@ -11,17 +11,28 @@ app = Flask(__name__)
 @app.route("/", methods=["GET", "POST"])
 async def index():
     if request.method == "POST":
-        input_text = request.form["text_input"]  # Get the text from the form
+        input_text = request.form["text_input"]
+        selected_comp = request.form.get("comp", "2")
+        print("selected comp " + selected_comp)
         if input_text is None or input_text.strip() == "":
-            return render_template("index.html")
-        response_lines = await process_text(input_text) # process the text
-        return render_template("index.html", response=response_lines, prompt=input_text) # Render the HTML page
-    return render_template("index.html") # renders the page on a GET request
+          return render_template("index.html", selected_comp=selected_comp)
+        response_lines = await process_prompt(input_text, selected_comp)
+        return render_template("index.html", response=response_lines, prompt=input_text, selected_comp=selected_comp) # Render the HTML page
+    return render_template("index.html", selected_comp="2") # renders the page on a GET request
 
 
-async def process_text(text):
-  result = await run_comparison(text, "n-way") # respond with a list of strings
+async def process_prompt(prompt, selected_comp):
+  match selected_comp:
+    case "0":
+      comp = "2-way"
+    case "1":
+      comp = "3-way"
+    case "2":
+       comp = "n-way"
+    case _:
+       comp = "none"
+  result = await run_comparison(prompt, comp) # respond with a list of strings
   return result
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)

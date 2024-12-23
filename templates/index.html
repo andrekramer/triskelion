@@ -4,17 +4,33 @@
 <head>
     <title>AI Model Comparator</title>
     <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: monospace;
-            padding: 20px;
-        }
         h1, h2 {
             color: #00ff00;
         }
         form {
             margin-top: 20px;
+        }
+        body {
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            margin: 0; /* Remove default body margin */
+            padding: 20px; /* Add some padding around content */
+        }
+        .terminal-input-group {
+            display: flex;
+            align-items: flex-start; /* Align items at the top */
+            margin: 0px; /* Add some margin */
+        }
+        .terminal-radio-group {
+            display: flex;
+            flex-direction: column; /* Stack radio buttons vertically */
+            margin-top: 0px; /* Add margin above radio group */
+            margin-left: 5px;
+        }
+        .terminal-radio-group label {
+            margin-bottom: 5px;
+            color: lime;
         }
         textarea {
             background-color: #1a1a1a;
@@ -28,13 +44,13 @@
             max-width: 500px; /* Set max width */
         }
         button {
-             background-color: #00ff00;
+            background-color: #00ff00;
             color: black;
             border: none;
             padding: 10px 20px;
             cursor: pointer;
             font-family: monospace;
-             margin-top: 10px;
+            margin-top: 10px;
         }
         button:hover {
             background-color: #00cc00; /* slightly darker green on hover */
@@ -42,7 +58,7 @@
         ul {
             list-style-type: none;
             padding: 0;
-             margin-top: 20px;
+            margin-top: 20px;
         }
         li {
              border-bottom: 1px solid #00ff00; /* Separator */
@@ -54,16 +70,22 @@
           flex-direction: column;
           align-items: flex-start;
           width: 100%;
-           max-width: 500px; /* Set max width */
+          max-width: 800px; /* Set max width */
          }
-
     </style>
 </head>
 <body>
   <div class="container">
-    <h1>LLM Comparator</h1>
+    <h1>AI Comparator</h1>
     <form method="post">
-        <textarea name="text_input" rows="5" cols="50">{{ prompt }}</textarea><br>
+        <div class="terminal-input-group">
+            <textarea name="text_input" rows="5" cols="60">{{ prompt }}</textarea>
+            <div class="terminal-radio-group">
+                <input type="radio" id="2-way" name="comp" value="0" {% if selected_comp == "0" %} checked {% endif %}><label for="2-way">2-way</label>
+                <input type="radio" id="3-way" name="comp" value="1" {% if selected_comp == "1" %} checked {% endif %}><label for="3-way">3-way</label>
+                <input type="radio" id="n-way" name="comp" value="2" {% if selected_comp == "2" %} checked {% endif %}><label for="n-way">n-way</label>
+            </div>
+        </div>
         <button type="submit">Prompt</button>
     </form>
 
