@@ -1,3 +1,7 @@
+# Triskelion (triple spiral)
+
+![triple spiral](static/Triple-Spiral-Symbol.svg.png)
+
 ## Query and compare multiple AI (LLM) models  
 
 Work in Progress   
