@@ -81,22 +81,23 @@
         <div class="terminal-input-group">
             <textarea name="text_input" rows="5" cols="60">{{ prompt }}</textarea>
             <div class="terminal-radio-group">
-                <input type="radio" id="2-way" name="comp" value="0" {% if selected_comp == "0" %} checked {% endif %}><label for="2-way">2-way</label>
-                <input type="radio" id="3-way" name="comp" value="1" {% if selected_comp == "1" %} checked {% endif %}><label for="3-way">3-way</label>
-                <input type="radio" id="n-way" name="comp" value="2" {% if selected_comp == "2" %} checked {% endif %}><label for="n-way">n-way</label>
+                <input type="radio" id="comp-0" name="comp" value="0" {% if selected_comp == "0" %} checked {% endif %}><label for="comp-0">{{ comps[0] }}</label>
+                <input type="radio" id="comp-1" name="comp" value="1" {% if selected_comp == "1" %} checked {% endif %}><label for="comp-1">{{ comps[1] }}</label>
+                <input type="radio" id="comp-2" name="comp" value="2" {% if selected_comp == "2" %} checked {% endif %}><label for="comp-2">{{ comps[2] }}</label>
             </div>
         </div>
-        <button type="submit">Prompt</button>
+        <button type="submit" id="promptButton">Prompt</button>
     </form>
 
     {% if response %}
         <h2>Response:</h2>
-        <ul>
+        <ul id="responseList">
         {% for line in response %}
             <li>{{ line }}</li>
         {% endfor %}
         </ul>
     {% endif %}
   </div>
+  <script src="static/js/script.js"></script>
 </body>
 </html>
