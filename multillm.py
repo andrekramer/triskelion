@@ -449,7 +449,7 @@ async def main():
   else:
     print(
 """Usage: python3 multillm.py 3-way|2-way|1-way|none|3-all|n-way query
-          -- use query as a prompt for multiple models and perform a comparison.
+          -- use given text as a prompt for multiple models and perform a comparison.
              1-way compare two responses
              2-way compare first response with second and third response
              3-way compare three responses to see if any two agree

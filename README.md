@@ -1,4 +1,4 @@
-## Query and compare multiple LLM models
+## Query and compare multiple AI (LLM) models  
 
 Work in Progress   
 
@@ -23,20 +23,20 @@ python3 multillm.py 2-way "toss a coin"
 python3 multillm.py 3-all "How many number ones did the Beatles have in the UK?"   
 python3 multillm.py n-way "What is the longest river on Mars?"
 
- -- use query as a prompt for multiple models and perform a comparison.
-             1-way compare two responses
-             2-way compare first response with second and third response
-             3-way compare three responses to see if any two agree
-             2-1 compare 2 responses and go on to a third if first two disagree
-             3-all compare three responses all ways
-             n-way compare all the responses each way
-             :none can be used to just query and not do a comparison
+ -- use given text as a prompt for multiple models and perform a comparison.   
+             1-way compare two responses    
+             2-way compare first response with second and third response    
+             3-way compare three responses to see if any two agree     
+             2-1 compare 2 responses and go on to a third if first two disagree    
+             3-all compare three responses all ways    
+             n-way compare all the responses each way   
+             :none can be used to just query and not do a comparison    
 
-python3 multillm.py xyz input
--- read input until EOF (Ctrl-D) and use the read input as the prompt with xyz comparison action
+python3 multillm.py xyz input     
+-- read input until EOF (Ctrl-D) and use the read input as the prompt with xyz comparison action.    
 
-python3 multillm.py xyz interactive
---- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye"
+python3 multillm.py xyz interactive     
+--- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye".    
 
 Run as a Web app:  
 
