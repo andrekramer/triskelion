@@ -1,10 +1,10 @@
-# Triskelion (triple spiral)
+# Triskelion (triple spiral): An AI Model Comparator   
 
-![triple spiral](static/Triple-Spiral-Symbol.svg.png)
+![triple spiral](static/Triple-Spiral-Symbol.svg.png)  
 
 ## Query and compare multiple AI (LLM) models  
 
-Work in Progress   
+**Work in Progress**
 
 Please see https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models   
 
