@@ -2,11 +2,12 @@
 from flask import Flask, request, render_template
 
 from multillm import run_comparison
-from config import configure
+from config import configure, web_comparisons
 
 configure()
 
 app = Flask(__name__)
+
 
 @app.route("/", methods=["GET", "POST"])
 async def index():
@@ -15,20 +16,20 @@ async def index():
         selected_comp = request.form.get("comp", "2")
         print("selected comp " + selected_comp)
         if input_text is None or input_text.strip() == "":
-          return render_template("index.html", selected_comp=selected_comp)
+          return render_template("index.html", selected_comp=selected_comp, comps=web_comparisons)
         response_lines = await process_prompt(input_text, selected_comp)
-        return render_template("index.html", response=response_lines, prompt=input_text, selected_comp=selected_comp) # Render the HTML page
-    return render_template("index.html", selected_comp="2") # renders the page on a GET request
+        return render_template("index.html", response=response_lines, prompt=input_text, selected_comp=selected_comp, comps=web_comparisons) # Render the HTML page
+    return render_template("index.html", selected_comp="2", comps=web_comparisons) # renders the page on a GET request
 
 
 async def process_prompt(prompt, selected_comp):
   match selected_comp:
     case "0":
-      comp = "2-way"
+      comp = web_comparisons[0]
     case "1":
-      comp = "3-way"
+      comp = web_comparisons[1]
     case "2":
-       comp = "n-way"
+       comp = web_comparisons[2]
     case _:
        comp = "none"
   result = await run_comparison(prompt, comp) # respond with a list of strings

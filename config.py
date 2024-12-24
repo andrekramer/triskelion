@@ -46,6 +46,8 @@ model_versions = {
   "hugface3": "Qwen/Qwen2.5-7B-Instruct"
 }
 
+web_comparisons = ["1-way", "3-way", "n-way" ]
+
 def configure():
   # Push down the model configuration to imported models to reflect any changes above.
   Gemini.model = model_versions["gemini"]
