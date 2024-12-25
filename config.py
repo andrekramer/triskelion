@@ -11,7 +11,13 @@ models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Llama, Llama2, HugFace,
 
 # The models to use for comparisons. Order by prefence for comparisons.
 # Need at least 3 models for 3-way. They can be the same model applied more than once.
-comparison_models = [Gemini, Openai, Grok] 
+comparison_models = [Openai, Gemini, Claud, Grok, Llama] 
+
+# use another model for comparison than those used for queries if true
+# use models from the comparion list in order if false.
+diff_comparator = True 
+
+max_no_models = 5
 
 T = True
 F = False
@@ -20,11 +26,11 @@ F = False
 schedule = {
   "gemini": T,
   "gemini2": F,
-  "claud": F,
   "openai": T,
   "openai2": F,
+  "claud": T,
   "grok": T,
-  "llama": F,
+  "llama": T,
   "llama2": F,
   "hugface": F,
   "hugface2": F,

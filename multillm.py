@@ -4,8 +4,7 @@ import aiohttp
 import time
 import json
 
-from config import schedule
-from config import models, comparison_models, configure
+from config import models, schedule, comparison_models, configure, diff_comparator, max_no_models
 import support
 from comparison import make_comparison
 
@@ -13,6 +12,17 @@ debug = False
 
 def get_comparison_model(i):
   return comparison_models[i % len(comparison_models)]
+
+def get_diff_comparison_model(model1, model2):
+  comparison_model = None
+  for cm in comparison_models:
+    if cm.name != model1.name and cm.name != model2.name:
+      comparison_model = cm
+      break
+  if comparison_model is None:
+    raise "Couldn't find a different comparison model to use for comparison"
+  else:
+    return comparison_model
 
 def get_model(i):
   for model in models:
@@ -27,7 +37,7 @@ def display(trail, text):
   print(text)
   trail.append(text)
 
-async def multi_way_query(prompt, max_models = 10):
+async def multi_way_query(prompt, max_models = max_no_models):
   """Query the configured models in parallel and gather the responses. """
   promises = []
   async with aiohttp.ClientSession() as session:
@@ -108,13 +118,16 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
   if verbose: display(trail, comparison)
 
   async with aiohttp.ClientSession() as session:
-    model = get_comparison_model(0)
-
-    if await compare(session, model, comparison, verbose):
-        if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
-        return alice
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
-        return None
+      model = get_comparison_model(0)
+    if verbose: display(trail, f"using model {model.name} for comparison")
+    if await compare(session, model, comparison, verbose):
+      if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
+      return alice
+    else:
+      return None
     
 
 async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, verbose = False):
@@ -133,8 +146,13 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
   if verbose: display(trail, comparison1)
 
   async with aiohttp.ClientSession() as session:
-    model = get_comparison_model(0)
-    if verbose: display(trail, "Compare using " + model.name)
+    
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(0), get_model(1))
+    else:
+      model = get_comparison_model(0)
+    if verbose: display(trail, f"using model {model.name} for comparison")
+
     if await compare(session, model, comparison1, verbose):
         if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
         return alice
@@ -142,25 +160,31 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
         comparison2 =  make_comparison(prompt, "Alice", alice, "Eve", eve)
         if verbose: display(trail, comparison2)
 
-        model = get_comparison_model(1)
-        if verbose: display(trail, "Compare using " + model.name)
+        if diff_comparator:
+          model = get_diff_comparison_model(get_model(0), get_model(2))
+        else:
+          model = get_comparison_model(1)
+        if verbose: display(trail, f"using model {model.name} for comparison")
 
         if await compare(session, model, comparison2, verbose):
           if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
           return alice
         else:
-           if two_way_only:
-             return None
+          if two_way_only:
+            return None
            
-           comparison3 =  make_comparison(prompt, "Bob", bob, "Eve", eve)
-           if verbose: display(trail, comparison3)
+          comparison3 =  make_comparison(prompt, "Bob", bob, "Eve", eve)
+          if verbose: display(trail, comparison3)
 
-           model = get_comparison_model(2)
-           if verbose: display(trail, "Compare using " + model.name)
+          if diff_comparator:
+            model = get_diff_comparison_model(get_model(1), get_model(2))
+          else:
+            model = get_comparison_model(2)
+          if verbose: display(trail, f"using model {model.name} for comparison")
 
-           if await compare(session, model, comparison3, verbose):
-              if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(1).name}")
-              return bob
+          if await compare(session, model, comparison3, verbose):
+            if verbose: display(trail, f"comparison {model.name} succeeds, can use {get_model(1).name}")
+            return bob
 
     return None
 
@@ -192,15 +216,31 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
  
   async with aiohttp.ClientSession() as session:
     promises = []
-    model = get_comparison_model(0)
+   
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(0), get_model(1))
+    else:
+      model = get_comparison_model(0)
+    if verbose: display(trail, f"using model {model.name} for comparison 0")
+
     promise = compare(session, model, comparison1, verbose)
     promises.append(promise)
 
-    model = get_comparison_model(1)
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(0), get_model(2))
+    else:
+      model = get_comparison_model(1)
+    if verbose: display(trail, f"using model {model.name} for comparison 1")
+
     promise = compare(session, model, comparison2, verbose)
     promises.append(promise)
 
-    model = get_comparison_model(2)
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(1), get_model(2))
+    else:
+      model = get_comparison_model(2)
+    if verbose: display(trail, f"using model {model.name} for comparison 2")
+
     promise = compare(session, model, comparison3, verbose)
     promises.append(promise)
 
@@ -238,8 +278,10 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   if verbose: display(trail, comparison1)
 
   async with aiohttp.ClientSession() as session:
-   
-    model = get_comparison_model(0)
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(0), get_model(1))
+    else:
+      model = get_comparison_model(0)
     if verbose: display(trail, "Compare first two responses using " + model.name)
     response = await compare(session, model, comparison1, verbose)
     if response:
@@ -267,7 +309,10 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
     if verbose: display(trail, comparison2)
   
-    model = get_comparison_model(1)
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(1), get_model(2))
+    else:
+      model = get_comparison_model(1)
     if verbose: display(trail, "Compare first and third using " + model.name)
     response = await compare(session, model, comparison2, verbose)
     if response:
@@ -277,7 +322,10 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
     if verbose: display(trail, comparison3)
 
-    model = get_comparison_model(2)
+    if diff_comparator:
+      model = get_diff_comparison_model(get_model(1), get_model(2))
+    else:
+      model = get_comparison_model(2)
     if verbose: display(trail, "Compare second and third using " + model.name)
     response = await compare(session, model, comparison3, verbose)
     if response:
@@ -291,9 +339,13 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
 def n_ways(trail, verbose=False):
   m = []
   pairs = []
+  max = max_no_models
   for model in models:
+    if max == 0:
+      break
     if schedule[model.name]:
       m.append(model)
+      max -= 1
   for i in range(len(m) - 1):
     for j in range(i + 1, len(m)):
       if verbose: display(trail, m[i].name + " <-> " + m[j].name)
@@ -306,6 +358,8 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   response_map = {}
   r = 0
   for model in models:
+    if r == max_no_models:
+      break
     if schedule[model.name]:
       if debug:
         print("response from " + model.name)
@@ -328,15 +382,9 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
                                    response_map[comparison_pair[1].name])
       if verbose: display(trail, comparison)
  
-      comparison_model = None
-      for cm in comparison_models:
-        if cm.name != comparison_pair[0].name and cm.name != comparison_pair[1].name:
-          comparison_model = cm
-          break
-      if comparison_model is None:
-        raise "Couldn't find a comparison model to use for n-way comparison"
-      else:
-        if verbose: display(trail, "comparison model selected: " + comparison_model.name)
+  
+      comparison_model = get_diff_comparison_model(comparison_pair[0], comparison_pair[1])
+      if verbose: display(trail, "comparison model selected: " + comparison_model.name)
 
       promise = compare(session, comparison_model, comparison, verbose)
       promises.append(promise)
@@ -399,7 +447,7 @@ async def run_comparison(prompt, action):
   elif action in ["2-way", "3-way", "3-all"]:
     max_models = 3
   else:
-    max_models = 10
+    max_models = max_no_models
 
   responses = await multi_way_query(prompt, max_models)
 
