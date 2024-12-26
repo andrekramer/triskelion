@@ -4,7 +4,7 @@ import aiohttp
 import time
 import json
 
-from config import models, schedule, comparison_models, configure, diff_comparator, max_no_models
+from config import models, schedule, comparison_models, configure, diff_comparator, max_no_models, trail_only, set_trail_only, display
 import support
 from comparison import make_comparison
 
@@ -32,10 +32,6 @@ def get_model(i):
        return model
      else:
         i -= 1
-
-def display(trail, text):
-  print(text)
-  trail.append(text)
 
 async def multi_way_query(prompt, max_models = max_no_models):
   """Query the configured models in parallel and gather the responses. """
@@ -396,7 +392,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   for comparison in comparison_pairs:
     model1, model2, compare_result = comparison
     compare_result = responses[r] # record the updated boolean response
-    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " result " + str(compare_result))
+    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " " + ("agree" if compare_result else "disagree"))
     r += 1
     if compare_result:
       quorum = quorums.get(model1.name)
@@ -478,6 +474,7 @@ async def run_comparison(prompt, action):
     display(trail, compared_text)
   else:
     display(trail, "FAIL comparison")
+    display(trail, "")
 
   return trail
 
@@ -490,6 +487,7 @@ async def timed_comparison(prompt, action):
   print(f"Time taken: {end_time - start_time:.2f} seconds")
 
 async def main():
+  set_trail_only(False)
 
   if len(sys.argv) > 2:
     action = sys.argv[1]
@@ -501,7 +499,7 @@ async def main():
              1-way compare two responses
              2-way compare first response with second and third response
              3-way compare three responses to see if any two agree
-             2-1 compare 2 responses and go on to a third if first two disagree
+             2-1 compare 2 responses and go on to a third only if first two disagree
              3-all compare three responses all ways
              n-way compare all the responses each way
              none can be used to just query and not do a comparison

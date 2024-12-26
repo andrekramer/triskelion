@@ -31,7 +31,7 @@ schedule = {
   "claud": T,
   "grok": F,
   "grok2": T,
-  "llama": F,
+  "llama": T,
   "llama2": F,
   "hugface": F,
   "hugface2": F,
@@ -70,3 +70,13 @@ def configure():
   HugFace.model = model_versions["hugface"]
   HugFace2.model = model_versions["hugface2"]
   HugFace3.model = model_versions["hugface3"]
+
+trail_only = True
+
+def display(trail, text):
+  if not trail_only: print(text)
+  trail.append(text)
+
+def set_trail_only(b):
+  global trail_only
+  trail_only = b

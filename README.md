@@ -12,7 +12,7 @@ Query multiple LLMs and compare results to help suppress model errors.
 The models to use and comparison action are configurable (see config.py, comparison.py).   
 Different flavous of comparisons are possible. 3-way is probaly the sweet spot.   
 
-To install please use the py-install script to install dependencies.   
+To install please use the py-install script to locally add dependencies.   
 Create files with api keys for the models:    
 claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key   
 You need 3 models configured to be able to mask one error (e.g. using 3-way comparison).   
@@ -32,7 +32,7 @@ python3 multillm.py n-way "What is the longest river on Mars?"
              1-way compare two responses    
              2-way compare first response with second and third response    
              3-way compare three responses to see if any two agree     
-             2-1 compare 2 responses and go on to a third if first two disagree    
+             2-1 compare 2 responses and go on to a third only if first two disagree    
              3-all compare three responses all ways    
              n-way compare all the responses each way   
              none can be used to just query and not do a comparison    
@@ -51,7 +51,11 @@ python3 app.py
 
 Browse to http://127.0.0.1:5000/   
    
-Example of responses from Web prompt:  
+or use REST:
+curl -X POST -H "Content-Type: application/json" -d '{"prompt": "Capital of Narnia?"}' http://127.0.0.1:5000/prompt
+
+Example of responses from Web prompt (from Commit 5fa3723):  
+
 ![triple spiral](images/web1.png)   
 ![triple spiral](images/web2.png)   
 
