@@ -464,6 +464,8 @@ async def run_comparison(prompt, action):
   elif action == "n-way":
     compared_text = await compare_n_way(prompt, texts, trail, True)
   elif action == "none":
+    display(trail, "first response:")
+    display(trail, texts[0])
     return trail
   else:
     display(trail, "unknown compare action " + action)

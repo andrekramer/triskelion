@@ -16,10 +16,11 @@ async def prompt():
             return jsonify({"error": "Invalid request: 'prompt' field is required."}), 400
         
         prompt = data['prompt']
-        trail = await run_comparison(prompt, "3-way")
+        action = data.get("action", "3-way")
+        trail = await run_comparison(prompt, action)
 
         response_text = trail[-1]
-        response = {"response": response_text}
+        response = {"compared_response": response_text}
         return jsonify(response), 200
 
     except Exception as e:
