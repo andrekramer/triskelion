@@ -2,7 +2,7 @@
 
 ![triple spiral](static/Triple-Spiral-Symbol.svg.png)  
 
-## Query and compare multiple AI (LLM) models  
+## Query and compare multiple AI (LLM) models in parallel
 
 **Work in Progress**
 
@@ -12,10 +12,11 @@ Query multiple LLMs and compare results to help suppress model errors.
 The models to use and comparison action are configurable (see config.py, comparison.py).   
 Different flavous of comparisons are possible. 3-way is probaly the sweet spot.   
 
-Use py-install script to install dependencies.   
-Create files with api keys for the models: claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key  
-You need 3 models configrued to mask one error (e.g. using 3-way).   
-Hint: You can use 3 models from HuggingFace by editing the config and set the other api keys to dummy values.
+To install please use the py-install script to install dependencies.   
+Create files with api keys for the models:    
+claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key   
+You need 3 models configured to be able to mask one error (e.g. using 3-way comparison).   
+Hint: You can use 3 models from HuggingFace by editing the config and adding just one (free) api key and set the other api keys to dummy values.
 
 Usage:   
 python3 multillm.py 3-way|2-way|1-way|3-all|none|n-way prompt   
@@ -25,7 +26,7 @@ python3 multillm.py 3-way "Who wrote The Great Gabsby?"
 python3 multillm.py 1-way "What is \"The Magic Number Seven\" about?"   
 python3 multillm.py 2-way "toss a coin"   
 python3 multillm.py 3-all "How many number ones did the Beatles have in the UK?"   
-python3 multillm.py n-way "What is the longest river on Mars?"
+python3 multillm.py n-way "What is the longest river on Mars?"  
 
  -- use given text as a prompt for multiple models and perform a comparison.   
              1-way compare two responses    
@@ -34,7 +35,7 @@ python3 multillm.py n-way "What is the longest river on Mars?"
              2-1 compare 2 responses and go on to a third if first two disagree    
              3-all compare three responses all ways    
              n-way compare all the responses each way   
-             :none can be used to just query and not do a comparison    
+             none can be used to just query and not do a comparison    
 
 python3 multillm.py xyz input     
 -- read input until EOF (Ctrl-D) and use the read input as the prompt with xyz comparison action.    
@@ -50,7 +51,7 @@ python3 app.py
 
 Browse to http://127.0.0.1:5000/   
    
-Example of responses:  
+Example of responses from Web prompt:  
 ![triple spiral](images/web1.png)   
 ![triple spiral](images/web2.png)   
 
