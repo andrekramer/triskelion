@@ -1,9 +1,26 @@
+import json
+
 class Model:
     pass
 
-def make_openai_std_query(text, model):
+def serialize(json_object):
+  return json.dumps(json_object)
+
+def make_openai_std_query_with_str_concat(text, model):
   return  "{ \"model\": \"" + model + "\", \"messages\": [{\"role\": \"user\", \"content\": \"" + \
           text + "\"}]}"
+
+def make_openai_std_query_from_obj(text, model):
+  obj = { "model": model }
+  message = { "role": "user" }
+  message["content"] = text
+  messages = []
+  messages.append(message)
+  obj["messages"] = messages
+
+  return serialize(obj)
+
+make_openai_std_query = make_openai_std_query_from_obj
 
 def read_file_as_string(filepath):
     try:

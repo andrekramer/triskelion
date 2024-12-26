@@ -18,3 +18,7 @@ class Grok(support.Model):
      "Authorization": "Bearer " + grok_api_key
    }
    return await support.ask(url, session, query, headers)
+ 
+class Grok2(Grok):
+  name = "grok2"
+  model = "grok-2-latest"

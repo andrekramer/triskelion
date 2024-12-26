@@ -9,9 +9,19 @@ class Claud(support.Model):
   model = "claude-3-5-sonnet-20241022"
   text_field = "text"
 
-  def make_query(text):
+  def make_query_str(text):
     return "{ \"model\": \"" + Claud.model + "\", \"max_tokens\": 1024, \"messages\": [{\"role\": \"user\", \"content\": \"" + \
           text + "\"} ]}"
+
+  def make_query(text):
+    obj = { "model": Claud.model, "max_tokens": 2048 }
+    message = { "role": "user" }
+    message["content"] = text
+    messages = []
+    messages.append(message)
+    obj["messages"] = messages
+
+    return support.serialize(obj)
 
   async def ask(session, query):
     headers = {
