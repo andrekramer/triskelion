@@ -49,4 +49,8 @@ Install Flash with the steps in py-install file.
 python3 app.py   
 
 Browse to http://127.0.0.1:5000/   
+   
+Example of responses:  
+![triple spiral](images/web1.png)   
+![triple spiral](images/web2.png)   
 
