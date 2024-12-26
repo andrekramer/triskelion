@@ -38,7 +38,7 @@ async def index():
           return render_template("index.html", selected_comp=selected_comp, comps=web_comparisons)
         response_lines = await process_prompt(input_text, selected_comp)
         return render_template("index.html", response=response_lines, prompt=input_text, selected_comp=selected_comp, comps=web_comparisons) # Render the HTML page
-    return render_template("index.html", selected_comp="2", comps=web_comparisons) # renders the page on a GET request
+    return render_template("index.html", selected_comp="1", comps=web_comparisons) # renders the page on a GET request
 
 
 async def process_prompt(prompt, selected_comp):

@@ -91,7 +91,7 @@
     </form>
 
     {% if response %}
-        <h2>Response:</h2>
+        <h2 id="responseHeader">Response:</h2>
         <ul id="responseList">
         {% for line in response %}
             <li>{{ line }}</li>

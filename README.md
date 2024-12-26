@@ -2,7 +2,7 @@
 
 ![triple spiral](static/Triple-Spiral-Symbol.svg.png)  
 
-## Query and compare multiple AI (LLM) models in parallel
+## Query and compare multiple AI models (e.g. 3 LLMs) in parallel
 
 **Work in Progress**
 
@@ -15,7 +15,7 @@ Different flavous of comparisons are possible. 3-way is probaly the sweet spot.
 To install please use the py-install script to locally add dependencies.   
 Create files with api keys for the models:    
 claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key   
-You need 3 models configured to be able to mask one error (e.g. using 3-way comparison).   
+You need 3 models configured to be able to mask one error (e.g. using 3-way comparison hence Triskelion).   
 Hint: You can use 3 models from HuggingFace by editing the config and adding just one (free) api key and set the other api keys to dummy values.
 
 Usage:   
