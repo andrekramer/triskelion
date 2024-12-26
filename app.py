@@ -2,9 +2,10 @@
 from flask import Flask, request, render_template, jsonify
 
 from multillm import run_comparison
-from config import configure, web_comparisons
+from config import configure, web_comparisons, set_trail_only
 
 configure()
+dev = True
 
 app = Flask(__name__)
 
@@ -53,5 +54,7 @@ async def process_prompt(prompt, selected_comp):
   result = await run_comparison(prompt, comp) # respond with a list of strings
   return result
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    set_trail_only(dev)
+    app.run(debug=dev)

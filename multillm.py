@@ -4,25 +4,12 @@ import aiohttp
 import time
 import json
 
-from config import models, schedule, comparison_models, configure, diff_comparator, max_no_models, trail_only, set_trail_only, display
+from config import models, schedule, comparison_models, comparison_schedule, configure
+from config import diff_comparator, max_no_models, set_trail_only, display
 import support
 from comparison import make_comparison
 
 debug = False
-
-def get_comparison_model(i):
-  return comparison_models[i % len(comparison_models)]
-
-def get_diff_comparison_model(model1, model2):
-  comparison_model = None
-  for cm in comparison_models:
-    if cm.name != model1.name and cm.name != model2.name:
-      comparison_model = cm
-      break
-  if comparison_model is None:
-    raise "Couldn't find a different comparison model to use for comparison"
-  else:
-    return comparison_model
 
 def get_model(i):
   for model in models:
@@ -32,6 +19,30 @@ def get_model(i):
        return model
      else:
         i -= 1
+
+def get_comparison_model(i):
+  for cm in comparison_models:
+    if not cm.name in comparison_schedule:
+      continue
+    if i == 0:
+      return cm
+    else:
+      i -= 1
+  return get_comparison_model(i)
+
+def get_diff_comparison_model(model1, model2):
+  comparison_model = None
+  for cm in comparison_models:
+    if not cm.name in comparison_schedule:
+      continue
+    if cm.name != model1.name and cm.name != model2.name:
+      comparison_model = cm
+      break
+  if comparison_model is None:
+    raise "Couldn't find a different comparison model to use for comparison"
+  else:
+    return comparison_model
+
 
 async def multi_way_query(prompt, max_models = max_no_models):
   """Query the configured models in parallel and gather the responses. """

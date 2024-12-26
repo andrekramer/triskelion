@@ -9,9 +9,9 @@ from hugface import HugFace, HugFace2, HugFace3
 # Order by preference for answers.
 models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2, Llama, Llama2, HugFace, HugFace2, HugFace3]
 
-# The models to use for comparisons. Order by prefence for comparisons.
-# Need at least 3 models for 3-way. They can be the same model applied more than once.
-comparison_models = [Openai, Gemini, Claud, Grok2, Llama] 
+# The models that can be used for comparisons (skipping any not in comparison schedule). 
+# Order by prefence for comparisons. Need at least 3 models for 3-way comparisons but can add a model more than once.
+comparison_models = [Openai, Gemini, Claud, Grok2, Llama]
 
 # use another model for comparison than those used for queries if true
 # use models from the comparion list in order if false.
@@ -36,6 +36,16 @@ schedule = {
   "hugface": F,
   "hugface2": F,
   "hugface3": F
+}
+
+# Which models to use for comparisons
+comparison_schedule = {
+  "gemini": T,
+  "openai": T,
+  "claud": T,
+  "grok2": F,
+  "llama": F,
+  "hugface": F
 }
 
 # model versions to use for queries
