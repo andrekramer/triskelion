@@ -10,7 +10,8 @@ from hugface import HugFace, HugFace2, HugFace3
 models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2, Llama, Llama2, HugFace, HugFace2, HugFace3]
 
 # The models that can be used for comparisons (skipping any not in comparison schedule). 
-# Order by prefence for comparisons. Need at least 3 models for 3-way comparisons but can add a model more than once.
+# Order by prefence for comparisons. Need at least 3 models for 3-way comparisons. 
+# Can add a model more than once but that can't be configured via the Web UI.
 comparison_models = [Openai, Gemini, Claud, Grok2, Llama]
 
 # use another model for comparison than those used for queries if true
@@ -30,8 +31,8 @@ schedule = {
   "openai2": F,
   "claud": T,
   "grok": F,
-  "grok2": T,
-  "llama": T,
+  "grok2": F,
+  "llama": F,
   "llama2": F,
   "hugface": F,
   "hugface2": F,
