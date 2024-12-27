@@ -10,7 +10,7 @@ Please see https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models
 
 Query multiple LLMs and compare results to help suppress model errors.   
 The models to use and comparison action are configurable (see config.py, comparison.py).   
-Different flavous of comparisons are possible. 3-way is probaly the sweet spot.   
+Different flavous of comparisons are possible. "3-way" is probaly the sweet spot as it can mask one error.   
 
 To install please use the py-install script to locally add dependencies.   
 Create files with api keys for the models:    
