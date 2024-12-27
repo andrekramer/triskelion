@@ -22,7 +22,7 @@ def get_model(i):
 
 def get_comparison_model(i):
   for cm in comparison_models:
-    if not cm.name in comparison_schedule:
+    if not comparison_schedule[cm.name]:
       continue
     if i == 0:
       return cm
@@ -33,13 +33,13 @@ def get_comparison_model(i):
 def get_diff_comparison_model(model1, model2):
   comparison_model = None
   for cm in comparison_models:
-    if not cm.name in comparison_schedule:
+    if not comparison_schedule[cm.name]:
       continue
     if cm.name != model1.name and cm.name != model2.name:
       comparison_model = cm
       break
   if comparison_model is None:
-    raise "Couldn't find a different comparison model to use for comparison"
+    raise RuntimeError("Couldn't find a different comparison model to use for comparison")
   else:
     return comparison_model
 

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triskelion Config</title>
+    <style>
+       button {
+            background-color: #00ff00;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #00cc00; /* slightly darker green on hover */
+        }
+        body {
+            background-color: black;
+            color: lime;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .feature-set {
+            margin-bottom: 20px;
+        }
+        .checkbox-label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .submit-container{
+          margin-top: 20px;
+        }
+        a {
+          color: lime;
+        }
+    </style>
+</head>
+<body>
+    <h1>Triskelion: Configurator</h1>
+    <form method="post">
+      <input type="hidden" name="selected_options" value=""/>
+      {% for set_id, feature_set in feature_sets.items() %}
+        <div class="feature-set">
+            <h2>{{ feature_set.name }}</h2>
+            {% for option in feature_set.options %}
+                <label class="checkbox-label">
+                  <input type="checkbox" name="selected_options" value="{{ option.id }}"
+                          {% if option.id in selected_options %}checked{% endif %}>
+                          {{ option.name }}
+                </label>
+            {% endfor %}
+        </div>
+      {% endfor %}
+      <div class="submit-container">
+        <button type="submit">Submit</button>
+      </div>
+  </form>
+  <div class="response"></div>
+  <div style="margin-top: 10px;"><a href="/">Prompt</a></div>
+  <script>
+    document.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      fetch(event.target.action, {
+        method: 'POST',
+        body: new FormData(event.target)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // document.querySelector('.response').innerHTML = "<p> Response: <br>" + data + "</p>";
+      })
+    })
+  </script>
+</body>
+</html>

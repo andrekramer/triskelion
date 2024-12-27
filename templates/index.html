@@ -72,6 +72,9 @@
           width: 100%;
           max-width: 800px; /* Set max width */
          }
+         a {
+          color: lime;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +92,7 @@
         </div>
         <button type="submit" id="promptButton">Prompt</button>
     </form>
+    <div style="margin-top: 10px;"></div><a href="/config">Config</a></div>
 
     {% if response %}
         <h2 id="responseHeader">Response:</h2>
@@ -99,6 +103,7 @@
         </ul>
     {% endif %}
   </div>
+ 
   <script src="static/js/script.js"></script>
 </body>
 </html>

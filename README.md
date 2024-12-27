@@ -51,7 +51,7 @@ python3 app.py
 
 Browse to http://127.0.0.1:5000/   
    
-or use REST:
+or use REST:    
 curl -X POST -H "Content-Type: application/json" -d '{"prompt": "Capital of Narnia?"}' http://127.0.0.1:5000/prompt
 
 Example of responses from Web prompt (from Commit 5fa3723):  
