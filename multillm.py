@@ -5,7 +5,7 @@ import time
 import json
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import diff_comparator, max_no_models, set_trail_only, display
+from config import get_diff_comparator, max_no_models, set_trail_only, display
 import support
 from comparison import make_comparison
 
@@ -125,7 +125,7 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
   if verbose: display(trail, comparison)
 
   async with aiohttp.ClientSession() as session:
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
       model = get_comparison_model(0)
@@ -154,7 +154,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
 
   async with aiohttp.ClientSession() as session:
     
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
       model = get_comparison_model(0)
@@ -167,7 +167,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
         comparison2 =  make_comparison(prompt, "Alice", alice, "Eve", eve)
         if verbose: display(trail, comparison2)
 
-        if diff_comparator:
+        if get_diff_comparator():
           model = get_diff_comparison_model(get_model(0), get_model(2))
         else:
           model = get_comparison_model(1)
@@ -183,7 +183,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
           comparison3 =  make_comparison(prompt, "Bob", bob, "Eve", eve)
           if verbose: display(trail, comparison3)
 
-          if diff_comparator:
+          if get_diff_comparator():
             model = get_diff_comparison_model(get_model(1), get_model(2))
           else:
             model = get_comparison_model(2)
@@ -224,7 +224,7 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
   async with aiohttp.ClientSession() as session:
     promises = []
    
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
       model = get_comparison_model(0)
@@ -233,7 +233,7 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
     promise = compare(session, model, comparison1, verbose)
     promises.append(promise)
 
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(2))
     else:
       model = get_comparison_model(1)
@@ -242,7 +242,7 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
     promise = compare(session, model, comparison2, verbose)
     promises.append(promise)
 
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(1), get_model(2))
     else:
       model = get_comparison_model(2)
@@ -285,7 +285,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   if verbose: display(trail, comparison1)
 
   async with aiohttp.ClientSession() as session:
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
       model = get_comparison_model(0)
@@ -316,7 +316,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
     if verbose: display(trail, comparison2)
   
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(1), get_model(2))
     else:
       model = get_comparison_model(1)
@@ -329,7 +329,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
     if verbose: display(trail, comparison3)
 
-    if diff_comparator:
+    if get_diff_comparator():
       model = get_diff_comparison_model(get_model(1), get_model(2))
     else:
       model = get_comparison_model(2)

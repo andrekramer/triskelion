@@ -3,7 +3,7 @@ from flask import Flask, request, render_template, jsonify
 
 from multillm import run_comparison
 from config import configure, web_comparisons, set_trail_only
-from config import models, comparison_models
+from config import models, comparison_models, get_diff_comparator, set_diff_comparator
 import config
 
 configure()
@@ -45,21 +45,40 @@ async def index():
 
 @app.route('/config', methods=['GET', 'POST'])
 def configure():
+
+    feature_sets, selected_options = get_features()
+
+    if request.method == 'POST':
+      selected_options = request.form.getlist('selected_options')
+      # Process the selected checkboxes
+
+      print(f"Selected Options: {selected_options}")
+
+      config_models(selected_options)
+      
+      set_diff_comparator("diff-comparisons" in selected_options)
+
+      return jsonify(selected_options)
+
+    return render_template('config.html', feature_sets=feature_sets, selected_options=selected_options)
+
+def get_features():
     feature_sets = {
         "set_models": {
             "name": "Models",
-            "options": [
-            ]
+            "options": []
         },
         "set_comparison_models": {
             "name": "Comparison Models",
-            "options": [
-            ]
+            "options": []
         },
+        "others": {
+           "name": "Others",
+           "options": []
+        }
     }
 
     selected_options = [""]
-
     options = []
     for model in models:
        if not model.name in config.schedule:
@@ -84,37 +103,40 @@ def configure():
        })
     feature_sets["set_comparison_models"]["options"] = options
 
-    if request.method == 'POST':
-      selected_options = request.form.getlist('selected_options')
-      # Process the selected checkboxes
+    options = []
+    if get_diff_comparator():
+       selected_options.append("diff-comparisons")
 
-      schedule2 = {}
-      for m in config.schedule:
-         schedule2[m] = False
-      comparison_schedule2 = {}
-      for cm in config.comparison_schedule:
-         comparison_schedule2[cm] = False
+    options.append({
+       "name": "diff comparisons",
+        "id": "diff-comparisons"
+    })
+    feature_sets["others"]["options"] = options
 
-      for option in selected_options:
-         if option.startswith("model-"):
-            m = option[6:]
-            print("selected model " + m)
-            schedule2[m] = True
-         elif option.startswith("comparison-model-"):
-            cm = option[17:]
-            print("selected comparison model " + cm)
-            comparison_schedule2[cm] = True
+    return (feature_sets, selected_options)
 
-      for m in schedule2:
-         config.schedule[m] = schedule2[m]
-      for cm in comparison_schedule2:
-         config.comparison_schedule[cm] = comparison_schedule2[cm]
-     
-      print(f"Selected Options: {selected_options}")
-      return jsonify(selected_options)
+def config_models(selected_options):
+    schedule2 = {}
+    for m in config.schedule:
+      schedule2[m] = False
+    comparison_schedule2 = {}
+    for cm in config.comparison_schedule:
+      comparison_schedule2[cm] = False
 
-    return render_template('config.html', feature_sets=feature_sets, selected_options=selected_options)
+    for option in selected_options:
+      if option.startswith("model-"):
+        m = option[6:]
+        print("selected model " + m)
+        schedule2[m] = True
+      elif option.startswith("comparison-model-"):
+        cm = option[17:]
+        print("selected comparison model " + cm)
+        comparison_schedule2[cm] = True
 
+    for m in schedule2:
+      config.schedule[m] = schedule2[m]
+    for cm in comparison_schedule2:
+      config.comparison_schedule[cm] = comparison_schedule2[cm]
 
 async def process_prompt(prompt, selected_comp):
   try:

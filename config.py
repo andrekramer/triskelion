@@ -18,6 +18,13 @@ comparison_models = [Openai, Gemini, Claud, Grok2, Llama]
 # use models from the comparion list in order if false.
 diff_comparator = True 
 
+def get_diff_comparator():
+  return diff_comparator
+
+def set_diff_comparator(value):
+  global diff_comparator
+  diff_comparator = value
+
 max_no_models = 5
 
 T = True
