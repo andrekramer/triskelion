@@ -79,15 +79,16 @@
 </head>
 <body>
   <div class="container">
-    <h1>Triskelion: AI Model Comparator</h1>
     <img src="static/Triple-Spiral-Symbol.svg.png" style="width:10%;">
+    <h1>Triskelion: AI Model Comparator</h1>
     <form method="post">
         <div class="terminal-input-group">
             <textarea name="text_input" rows="5" cols="60">{{ prompt }}</textarea>
             <div class="terminal-radio-group">
-                <input type="radio" id="comp-0" name="comp" value="0" {% if selected_comp == "0" %} checked {% endif %}><label for="comp-0">{{ comps[0] }}</label>
-                <input type="radio" id="comp-1" name="comp" value="1" {% if selected_comp == "1" %} checked {% endif %}><label for="comp-1">{{ comps[1] }}</label>
-                <input type="radio" id="comp-2" name="comp" value="2" {% if selected_comp == "2" %} checked {% endif %}><label for="comp-2">{{ comps[2] }}</label>
+                {% for item in comps %}
+                    {% set i = loop.index - 1 %}
+                    <input type="radio" id="comp-{{ i }}" name="comp" value="{{ i }}" {% if selected_comp == ( i | string) %} checked {% endif %}><label for="comp-{{ i }}">{{ comps[i] }}</label>
+                {% endfor %}
             </div>
         </div>
         <button type="submit" id="promptButton">Prompt</button>

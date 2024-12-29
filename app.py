@@ -2,7 +2,7 @@
 from flask import Flask, request, render_template, jsonify
 
 from multillm import run_comparison
-from config import configure, web_comparisons, set_trail_only
+from config import configure, web_comparisons, default_web_comparison, set_trail_only
 from config import models, comparison_models, get_diff_comparator, set_diff_comparator
 import config
 
@@ -34,12 +34,15 @@ async def prompt():
 async def index():
     if request.method == "POST":
         input_text = request.form["text_input"]
-        selected_comp = request.form.get("comp", "2")
+        selected_comp = request.form.get("comp", str(default_web_comparison))
         print("selected comp " + selected_comp)
+
         if input_text is None or input_text.strip() == "":
           return render_template("index.html", selected_comp=selected_comp, comps=web_comparisons)
+        
         response_lines = await process_prompt(input_text, selected_comp)
         return render_template("index.html", response=response_lines, prompt=input_text, selected_comp=selected_comp, comps=web_comparisons) # Render the HTML page
+    
     return render_template("index.html", selected_comp="1", comps=web_comparisons) # renders the page on a GET request
 
 
@@ -140,15 +143,9 @@ def config_models(selected_options):
 
 async def process_prompt(prompt, selected_comp):
   try:
-    match selected_comp:
-      case "0":
-        comp = web_comparisons[0]
-      case "1":
-        comp = web_comparisons[1]
-      case "2":
-         comp = web_comparisons[2]
-      case _:
-         comp = "none"
+    i = int(selected_comp)
+    comp = web_comparisons[i]
+   
     result = await run_comparison(prompt, comp) # respond with a list of strings
     return result
   except Exception as e:

@@ -72,7 +72,9 @@ model_versions = {
   "hugface3": "Qwen/Qwen2.5-7B-Instruct"
 }
 
+
 web_comparisons = ["1-way", "3-way", "n-way" ]
+default_web_comparison = web_comparisons.index("3-way")
 
 def configure():
   # Push down the model configuration to imported models to reflect any changes above.
@@ -89,6 +91,7 @@ def configure():
   HugFace2.model = model_versions["hugface2"]
   HugFace3.model = model_versions["hugface3"]
 
+debug = False
 trail_only = True
 
 def display(trail, text):

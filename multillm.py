@@ -5,11 +5,9 @@ import time
 import json
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import get_diff_comparator, max_no_models, set_trail_only, display
+from config import get_diff_comparator, max_no_models, set_trail_only, display, debug
 import support
 from comparison import make_comparison
-
-debug = False
 
 def get_model(i):
   for model in models:
@@ -122,7 +120,7 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
   bob = texts[1]
 
   comparison = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: display(trail, comparison)
+  if debug: display(trail, comparison)
 
   async with aiohttp.ClientSession() as session:
     if get_diff_comparator():
@@ -150,7 +148,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
   eve = texts[2]
 
   comparison1 =  make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: display(trail, comparison1)
+  if debug: display(trail, comparison1)
 
   async with aiohttp.ClientSession() as session:
     
@@ -165,7 +163,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
         return alice
     else:
         comparison2 =  make_comparison(prompt, "Alice", alice, "Eve", eve)
-        if verbose: display(trail, comparison2)
+        if debug: display(trail, comparison2)
 
         if get_diff_comparator():
           model = get_diff_comparison_model(get_model(0), get_model(2))
@@ -181,7 +179,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
             return None
            
           comparison3 =  make_comparison(prompt, "Bob", bob, "Eve", eve)
-          if verbose: display(trail, comparison3)
+          if debug: display(trail, comparison3)
 
           if get_diff_comparator():
             model = get_diff_comparison_model(get_model(1), get_model(2))
@@ -207,17 +205,17 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
   eve = texts[2]
 
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: 
+  if debug: 
     display(trail, "Alice and Bob")
     display(trail, comparison1)
 
   comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
-  if verbose: 
+  if debug: 
     display(trail, "Alice and Eve")
     display(trail, comparison2)
   
   comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
-  if verbose: 
+  if debug: 
     display(trail, "Bob and Eve")
     display(trail, comparison3)
  
@@ -282,7 +280,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   bob = texts[1]
 
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if verbose: display(trail, comparison1)
+  if debug: display(trail, comparison1)
 
   async with aiohttp.ClientSession() as session:
     if get_diff_comparator():
@@ -314,7 +312,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
     
     eve = text3
     comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
-    if verbose: display(trail, comparison2)
+    if debug: display(trail, comparison2)
   
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(1), get_model(2))
@@ -327,7 +325,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
       return alice
   
     comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
-    if verbose: display(trail, comparison3)
+    if debug: display(trail, comparison3)
 
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(1), get_model(2))
@@ -387,7 +385,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
                                    response_map[comparison_pair[0].name],
                                    "Jane (using " + comparison_pair[1].name + ")",
                                    response_map[comparison_pair[1].name])
-      if verbose: display(trail, comparison)
+      if debug: display(trail, comparison)
  
   
       comparison_model = get_diff_comparison_model(comparison_pair[0], comparison_pair[1])
