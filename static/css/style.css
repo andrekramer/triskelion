@@ -1,0 +1,76 @@
+h1, h2 {
+    color: #00ff00;
+}
+form {
+    margin-top: 20px;
+}
+body {
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    margin: 0; /* Remove default body margin */
+    padding: 20px; /* Add some padding around content */
+}
+.terminal-input-group {
+    display: flex;
+    align-items: flex-start; /* Align items at the top */
+    margin: 0px; /* Add some margin */
+}
+.terminal-radio-group {
+    display: flex;
+    flex-direction: column; /* Stack radio buttons vertically */
+    margin-top: 0px; /* Add margin above radio group */
+    margin-left: 5px;
+}
+.terminal-radio-group label {
+    margin-bottom: 5px;
+    color: lime;
+}
+textarea {
+    background-color: #1a1a1a;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    box-sizing: border-box; /* ensures padding and border are included in the size */
+    width: 100%; /* Take up all the horizontal space */
+    max-width: 400px; /* Set max width */
+}
+button {
+    background-color: #00ff00;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: monospace;
+    margin-top: 10px;
+}
+button:hover {
+    background-color: #00cc00; /* slightly darker green on hover */
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
+}
+li {
+     border-bottom: 1px solid #00ff00; /* Separator */
+     padding: 5px 0;
+}
+.checkbox-label {
+    display: block;
+    margin-bottom: 5px;
+    color: lime;
+}
+ /* make the form and the response align */
+div.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 800px; /* Set max width */
+ }
+ a {
+  color: lime;
+ }
