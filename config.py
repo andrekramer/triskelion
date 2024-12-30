@@ -4,15 +4,16 @@ from openai import Openai, Openai2
 from grok import Grok, Grok2
 from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
+from faulty import Faulty
 
 # The models and order of responses (skiping any not in schedule). Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
-models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2, Llama, Llama2, HugFace, HugFace2, HugFace3]
+models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2, Llama, Llama2, HugFace, HugFace2, HugFace3, Faulty]
 
 # The models that can be used for comparisons (skipping any not in comparison schedule). 
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons. 
 # Can add a model more than once but that can't be configured via the Web UI.
-comparison_models = [Openai, Gemini, Claud, Grok2, Llama]
+comparison_models = [Openai, Gemini, Claud, Grok2, Llama, Faulty]
 
 # use another model for comparison than those used for queries if true
 # use models from the comparion list in order if false.
@@ -43,7 +44,8 @@ schedule = {
   "llama2": F,
   "hugface": F,
   "hugface2": F,
-  "hugface3": F
+  "hugface3": F,
+  "faulty": F
 }
 
 # Which models to use for comparisons
@@ -53,7 +55,8 @@ comparison_schedule = {
   "claud": T,
   "grok2": F,
   "llama": F,
-  "hugface": F
+  "hugface": F,
+  "faulty": F
 }
 
 # model versions to use for queries

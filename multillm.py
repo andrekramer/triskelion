@@ -91,6 +91,9 @@ def parse_responses(responses, trail, verbose=False):
 
 
 async def compare(session, model, comparison, trail, verbose = False):
+  if comparison is None or comparison == "":
+    return False
+  
   query = model.make_query(clean(comparison))
   if debug: print(query)
   response = await model.ask(session, query)
@@ -104,7 +107,7 @@ async def compare(session, model, comparison, trail, verbose = False):
     return False
   if verbose: display(trail, f"comparison using {model.name} result:\n" + text)
 
-  if text.find("YES") != -1 and not text.find("NO") != -1:
+  if text.find("YES") != -1 and text.find("NO") == -1:
     return True
   else:
     return False
@@ -205,17 +208,17 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
   eve = texts[2]
 
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
-  if debug: 
+  if debug:
     display(trail, "Alice and Bob")
     display(trail, comparison1)
 
   comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
-  if debug: 
+  if debug:
     display(trail, "Alice and Eve")
     display(trail, comparison2)
   
   comparison3 = make_comparison(prompt, "Bob", bob, "Eve", eve)
-  if debug: 
+  if debug:
     display(trail, "Bob and Eve")
     display(trail, comparison3)
  
@@ -252,9 +255,9 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
     responses = await asyncio.gather(*promises)
 
   if verbose:
-    display(trail, "Alice and Bob " +  ("agree" if responses[0] else "disagree"))
-    display(trail, "Alice and Eve " +  ("agree" if responses[1] else "disagree"))
-    display(trail, "Bob and Eve " +  ("agree" if responses[2] else "disagree"))
+    display(trail, "Alice and Bob " +  ("agree" if responses[0] else "fail to agree"))
+    display(trail, "Alice and Eve " +  ("agree" if responses[1] else "fail to agree"))
+    display(trail, "Bob and Eve " +  ("agree" if responses[2] else "fail to agree"))
 
   if all(responses):
     display(trail, "**concensus**")
@@ -400,8 +403,9 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   # go over the comparison results
   for comparison in comparison_pairs:
     model1, model2, compare_result = comparison
+    if debug: display(trail, "Comparison response " + str(responses[r]))
     compare_result = responses[r] # record the updated boolean response
-    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " " + ("agree" if compare_result else "disagree"))
+    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " " + ("agree" if compare_result else "fail to agree"))
     r += 1
     if compare_result:
       quorum = quorums.get(model1.name)
@@ -425,7 +429,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
       quorum_size = len(q) + 1
 
   if quorum is None:
-    if verbose: display(trail, "No quorum found. All disagree.")
+    if verbose: display(trail, "No quorum found.")
   else:
     if verbose: display(trail, "quorum " + quorum + " of " + str(quorum_size))
     q = quorums[quorum]
@@ -510,7 +514,7 @@ async def main():
              1-way compare two responses
              2-way compare first response with second and third response
              3-way compare three responses to see if any two agree
-             2-1 compare 2 responses and go on to a third only if first two disagree
+             2-1 compare 2 responses and go on to a third only if first two fail to agree
              3-all compare three responses all ways
              n-way compare all the responses each way
              none can be used to just query and not do a comparison
