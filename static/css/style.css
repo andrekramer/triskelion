@@ -3,6 +3,7 @@ h1, h2 {
 }
 form {
     margin-top: 20px;
+    width: 600px;
 }
 body {
     background-color: black;
@@ -35,7 +36,7 @@ textarea {
     font-size: 12px;
     box-sizing: border-box; /* ensures padding and border are included in the size */
     width: 100%; /* Take up all the horizontal space */
-    max-width: 400px; /* Set max width */
+    max-width: 500px; /* Set max width */
 }
 button {
     background-color: #00ff00;
