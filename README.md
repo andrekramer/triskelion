@@ -10,7 +10,7 @@ Query multiple LLMs and compare results to help suppress model errors.
 The models to use and comparison action are configurable (see config.py, comparison.py).   
 Different flavous of comparisons are possible. "3-way" is probaly the sweet spot as it can mask one error.   
 
-To install please use the py-install script to locally add ependencies.   
+To install please use the py-install script to locally add ependencies (tested on Python 3.12.3).   
 Create files with api keys for the models:    
 claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key   
   

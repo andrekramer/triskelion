@@ -1,3 +1,14 @@
+import os
+
+if not os.path.isfile("gemini-api-key") or \
+   not os.path.isfile("claud-api-key") or \
+   not os.path.isfile("openai-api-key") or \
+   not os.path.isfile("grok-api-key") or \
+   not os.path.isfile("llama-api-key") or \
+   not os.path.isfile("hugface-api-key"):
+  print("please add api keys")
+  exit(-1)
+
 from gemini import Gemini, Gemini2
 from claud import  Claud
 from openai import Openai, Openai2

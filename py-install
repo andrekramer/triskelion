@@ -1,6 +1,6 @@
 python3 -m venv venv
 source venv/bin/activate
-pip install aoihttp
+pip install aiohttp
 pip install Flask # Only if using the Web app
 pip install 'flask[async]' # as above
 python3 multillm.py 
