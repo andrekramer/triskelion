@@ -363,6 +363,7 @@ def n_ways(trail, verbose=False):
 
 async def compare_n_way(prompt, response_texts, trail, verbose=False):
   run_models = []
+  comp_models = []
   response_map = {}
   r = 0
   for model in models:
@@ -390,9 +391,9 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
                                    response_map[comparison_pair[1].name])
       if debug: display(trail, comparison)
  
-  
       comparison_model = get_diff_comparison_model(comparison_pair[0], comparison_pair[1])
-      if verbose: display(trail, "comparison model selected: " + comparison_model.name)
+      if debug: display(trail, "comparison model selected: " + comparison_model.name)
+      comp_models.append(comparison_model)
 
       promise = compare(session, comparison_model, comparison, verbose)
       promises.append(promise)
@@ -405,7 +406,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
     model1, model2, compare_result = comparison
     if debug: display(trail, "Comparison response " + str(responses[r]))
     compare_result = responses[r] # record the updated boolean response
-    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " " + ("agree" if compare_result else "fail to agree"))
+    if verbose: display(trail, "comparison " + model1.name + " <--> " + model2.name + " (using " + comp_models[r].name + ") " + ("agree" if compare_result else "fail to agree"))
     r += 1
     if compare_result:
       quorum = quorums.get(model1.name)
