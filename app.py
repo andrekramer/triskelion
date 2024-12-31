@@ -111,7 +111,7 @@ def get_features():
        selected_options.append("diff-comparisons")
 
     options.append({
-       "name": "diff comparisons",
+       "name": "use different model for comparisons",
         "id": "diff-comparisons"
     })
     feature_sets["others"]["options"] = options
