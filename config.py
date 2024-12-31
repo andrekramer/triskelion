@@ -87,7 +87,7 @@ model_versions = {
 }
 
 
-web_comparisons = ["1-way", "3-way", "n-way" ]
+web_comparisons = ["1-way", "3-way", "n-way", "none" ]
 default_web_comparison = web_comparisons.index("3-way")
 
 def configure():

@@ -11,7 +11,7 @@
     <h1>Triskelion: AI Model Comparator</h1>
     <form method="post">
         <div class="terminal-input-group">
-            <textarea name="text_input" rows="5" cols="60">{{ prompt }}</textarea>
+            <textarea name="text_input" rows="8" cols="60">{{ prompt }}</textarea>
             <div class="terminal-radio-group">
                 {% for item in comps %}
                     {% set i = loop.index - 1 %}
