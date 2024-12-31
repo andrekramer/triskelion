@@ -1,10 +1,8 @@
-# Triskelion (triple spiral): An AI Model Comparator   
+# Triskelion (a triple spiral): An AI Model Comparator   
 
 ![triple spiral](static/Triple-Spiral-Symbol.svg.png)  
 
 ## Query and compare multiple AI models (e.g. 3 LLMs) in parallel
-
-**Work in Progress**
 
 Please see https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models   
 
@@ -12,13 +10,15 @@ Query multiple LLMs and compare results to help suppress model errors.
 The models to use and comparison action are configurable (see config.py, comparison.py).   
 Different flavous of comparisons are possible. "3-way" is probaly the sweet spot as it can mask one error.   
 
-To install please use the py-install script to locally add dependencies.   
+To install please use the py-install script to locally add ependencies.   
 Create files with api keys for the models:    
 claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key   
+  
 You need 3 models configured to be able to mask one error (e.g. using 3-way comparison hence Triskelion).   
-Hint: You can use 3 models from HuggingFace by editing the config and adding just one (free) api key and set the other api keys to dummy values.
+Hint: You can use 3 models from HuggingFace by editing the config and adding just one (free) api key   
+and set the other api keys to dummy values.
 
-Usage:   
+## Usage:   
 python3 multillm.py 3-way|2-way|1-way|3-all|none|n-way prompt   
 
 e.g.   
@@ -43,7 +43,7 @@ python3 multillm.py xyz input
 python3 multillm.py xyz interactive     
 --- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye".    
 
-Run as a Web app:  
+## Run as a Web app:  
 
 Install Flash with the steps in py-install file.  
 
@@ -54,7 +54,7 @@ Browse to http://127.0.0.1:5000/
 or use REST:    
 curl -X POST -H "Content-Type: application/json" -d '{"prompt": "Capital of Narnia?"}' http://127.0.0.1:5000/prompt
 
-Example of responses from Web prompt (from Commit 9db8b49):  
+Example of responses from Web prompt (from Commit 50347e8):  
 
 ![triple spiral](images/web1.png)   
 ![triple spiral](images/web2.png)   
