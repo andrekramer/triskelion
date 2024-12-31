@@ -5,9 +5,14 @@ import time
 import json
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import get_diff_comparator, max_no_models, set_trail_only, display, debug
+from config import get_diff_comparator, max_no_models, set_trail_only, display, debug, client_timeout_seconds
 import support
 from comparison import make_comparison
+
+timeout = aiohttp.ClientTimeout(total=client_timeout_seconds)
+
+def getSession():
+   return aiohttp.ClientSession(timeout=timeout) 
 
 def get_model(i):
   for model in models:
@@ -45,7 +50,7 @@ def get_diff_comparison_model(model1, model2):
 async def multi_way_query(prompt, max_models = max_no_models):
   """Query the configured models in parallel and gather the responses. """
   promises = []
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
 
     i = 0
     for model in models:
@@ -74,7 +79,11 @@ def parse_responses(responses, trail, verbose=False):
       if debug: display(trail, "skiped " + model.name)
       continue
     if verbose: display(trail, "model " + model.name)
-    json_data = json.loads(responses[i])
+    response = responses[i]
+    if response is None or response == "":
+      response = "{}"
+    
+    json_data = json.loads(response)
     json_formatted_str = json.dumps(json_data, indent=2)
     if debug: print(json_formatted_str)
     text = support.search_json(json_data, model.text_field)
@@ -125,7 +134,7 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
   comparison = make_comparison(prompt, "Alice", alice, "Bob", bob)
   if debug: display(trail, comparison)
 
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
@@ -153,7 +162,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
   comparison1 =  make_comparison(prompt, "Alice", alice, "Bob", bob)
   if debug: display(trail, comparison1)
 
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
@@ -222,7 +231,7 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
     display(trail, "Bob and Eve")
     display(trail, comparison3)
  
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     promises = []
    
     if get_diff_comparator():
@@ -285,7 +294,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
   if debug: display(trail, comparison1)
 
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
@@ -381,7 +390,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   promises = []
   comparison_pairs = n_ways(trail, True)
   
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
 
     for comparison_pair in comparison_pairs:
       comparison = make_comparison(prompt, 

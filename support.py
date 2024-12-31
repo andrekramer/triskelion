@@ -35,11 +35,14 @@ def read_file_as_string(filepath):
         return None
     
 async def ask(url, session, query, headers):
-  async with session.post(url, data=query.encode(), headers=headers) as response:
-    print(f"Fetched {url}: Status code {response.status}")
-    if response.status != 200:
-      return "{\"error\": " + str(response.status) + "}"
-    return await response.text()
+  try:
+    async with session.post(url, data=query.encode(), headers=headers) as response:
+      print(f"Fetched {url}: Status code {response.status}")
+      if response.status != 200:
+        return "{\"error\": " + str(response.status) + "}"
+      return await response.text()
+  except Exception as e:
+    return "{ \"error\": \"" + e.__class__.__name__ + "\"}"
 
 def search_json(json_data, target_key):
     """Recursively searches a JSON object for a key."""

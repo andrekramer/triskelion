@@ -105,6 +105,8 @@ def configure():
   HugFace2.model = model_versions["hugface2"]
   HugFace3.model = model_versions["hugface3"]
 
+client_timeout_seconds = 30
+
 debug = False
 trail_only = True
 
