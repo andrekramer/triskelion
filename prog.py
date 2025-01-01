@@ -1,5 +1,8 @@
 # Example of how to use run_comparison from multillm
 
+# Uncomment and use the package import as needed:
+# from triskelion import multillm
+# import multillm
 import multillm
 
 import asyncio
