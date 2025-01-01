@@ -1,4 +1,4 @@
-# Triskelion (a triple spiral): An AI Model Comparator   
+# Triskelion (a triple spiral): AI Model Comparator   
 
 ![triple spiral](static/Triple-Spiral-Symbol.svg.png)  
 
@@ -19,7 +19,7 @@ Hint: You can use 3 models from HuggingFace by editing the config and adding jus
 and set the other api keys to dummy values.
 
 ## Usage:   
-python3 multillm.py 3-way|2-way|1-way|3-all|none|n-way prompt   
+python3 multillm.py 3-way|2-way|1-way|2-1|3-all|none|n-way prompt   
 
 e.g.   
 python3 multillm.py 3-way "Who wrote The Great Gabsby?"    

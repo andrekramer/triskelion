@@ -4,10 +4,19 @@ import aiohttp
 import time
 import json
 
+# Add current directory to import path when using this file as a module. Say with "from <some-dir> import multillm".
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent))
+
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import get_diff_comparator, max_no_models, set_trail_only, display, debug
+from config import get_diff_comparator, max_no_models, set_trail_only, display, debug, client_timeout_seconds
 import support
 from comparison import make_comparison
+
+timeout = aiohttp.ClientTimeout(total=client_timeout_seconds)
+
+def getSession():
+   return aiohttp.ClientSession(timeout=timeout) 
 
 def get_model(i):
   for model in models:
@@ -41,11 +50,10 @@ def get_diff_comparison_model(model1, model2):
   else:
     return comparison_model
 
-
 async def multi_way_query(prompt, max_models = max_no_models):
   """Query the configured models in parallel and gather the responses. """
   promises = []
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
 
     i = 0
     for model in models:
@@ -74,7 +82,11 @@ def parse_responses(responses, trail, verbose=False):
       if debug: display(trail, "skiped " + model.name)
       continue
     if verbose: display(trail, "model " + model.name)
-    json_data = json.loads(responses[i])
+    response = responses[i]
+    if response is None or response == "":
+      response = "{}"
+    
+    json_data = json.loads(response)
     json_formatted_str = json.dumps(json_data, indent=2)
     if debug: print(json_formatted_str)
     text = support.search_json(json_data, model.text_field)
@@ -88,7 +100,6 @@ def parse_responses(responses, trail, verbose=False):
     if i == len(responses):
       break
   return response_texts
-
 
 async def compare(session, model, comparison, trail, verbose = False):
   if comparison is None or comparison == "":
@@ -112,9 +123,9 @@ async def compare(session, model, comparison, trail, verbose = False):
   else:
     return False
 
-async def compare_one_way(prompt, response_texts, trail, verbose = False):
-  """Compare the first two non blank result texts. Return None if no matches"""
-  texts = [item for item in response_texts if item.strip() != ""]
+
+async def compare_one_way(prompt, texts, trail, verbose = False):
+  """Compare the first two result texts. Return None if no matches"""
   if len(texts) < 2:
     display(trail, "Not enough responses to compare")
     return None
@@ -125,7 +136,7 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
   comparison = make_comparison(prompt, "Alice", alice, "Bob", bob)
   if debug: display(trail, comparison)
 
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
@@ -138,9 +149,8 @@ async def compare_one_way(prompt, response_texts, trail, verbose = False):
       return None
     
 
-async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, verbose = False):
-  """Compare the first 3 non blank result texts 2 or 3 way. Return None if no matches"""
-  texts = [item for item in response_texts if item.strip() != ""]
+async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose = False):
+  """Compare the first 3 result texts 2 or 3 way. Return None if no matches"""
   if len(texts) < 3:
     display(trail, "Not enough responses to compare!")
     return None
@@ -153,7 +163,7 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
   comparison1 =  make_comparison(prompt, "Alice", alice, "Bob", bob)
   if debug: display(trail, comparison1)
 
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
@@ -196,9 +206,8 @@ async def compare_two_or_three_way(prompt, response_texts, two_way_only, trail, 
 
     return None
 
-async def compare_all_three(prompt, response_texts, trail, verbose=False):
-  """Compare the first 3 non blank result texts in parallel"""
-  texts = [item for item in response_texts if item.strip() != ""]
+async def compare_all_three(prompt, texts, trail, verbose=False):
+  """Compare the first 3 result texts in parallel"""
   if len(texts) < 3:
     display(trail, "Not enough responses to compare!")
     return None
@@ -222,7 +231,7 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
     display(trail, "Bob and Eve")
     display(trail, comparison3)
  
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     promises = []
    
     if get_diff_comparator():
@@ -271,10 +280,8 @@ async def compare_all_three(prompt, response_texts, trail, verbose=False):
   
   return None
 
-
-async def compare_two_first(prompt, response_texts, trail, verbose=False):
-  """Compare 2 non blank result texts first and only use a third if first 3 disagree """
-  texts = [item for item in response_texts if item.strip() != ""]
+async def compare_two_first(prompt, texts, trail, verbose=False):
+  """Compare 2 result texts first and only use a third if first 3 disagree """
   if len(texts) < 2:
     display(trail, "Not enough responses to compare!")
     return None
@@ -285,7 +292,7 @@ async def compare_two_first(prompt, response_texts, trail, verbose=False):
   comparison1 = make_comparison(prompt, "Alice", alice, "Bob", bob)
   if debug: display(trail, comparison1)
 
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
     if get_diff_comparator():
       model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
@@ -381,7 +388,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   promises = []
   comparison_pairs = n_ways(trail, True)
   
-  async with aiohttp.ClientSession() as session:
+  async with getSession() as session:
 
     for comparison_pair in comparison_pairs:
       comparison = make_comparison(prompt, 
@@ -510,7 +517,7 @@ async def main():
     prompt = clean(sys.argv[2])
   else:
     print(
-"""Usage: python3 multillm.py 3-way|2-way|1-way|none|3-all|n-way query
+"""Usage: python3 multillm.py 3-way|2-way|1-way|none|2-1|3-all|n-way prompt
           -- use given text as a prompt for multiple models and perform a comparison.
              1-way compare two responses
              2-way compare first response with second and third response

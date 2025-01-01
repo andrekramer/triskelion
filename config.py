@@ -87,7 +87,7 @@ model_versions = {
 }
 
 
-web_comparisons = ["1-way", "3-way", "n-way" ]
+web_comparisons = ["1-way", "3-way", "n-way", "none" ]
 default_web_comparison = web_comparisons.index("3-way")
 
 def configure():
@@ -104,6 +104,8 @@ def configure():
   HugFace.model = model_versions["hugface"]
   HugFace2.model = model_versions["hugface2"]
   HugFace3.model = model_versions["hugface3"]
+
+client_timeout_seconds = 30
 
 debug = False
 trail_only = True
