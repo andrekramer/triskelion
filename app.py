@@ -11,6 +11,7 @@ dev = True
 
 app = Flask(__name__)
 
+
 @app.route('/prompt', methods=['POST'])
 async def prompt():
     try:
@@ -29,7 +30,7 @@ async def prompt():
     except Exception as e:
       return jsonify({"error": f"Error processing the prompt: {str(e)}"}), 500
 
-
+      
 @app.route("/", methods=["GET", "POST"])
 async def index():
     if request.method == "POST":
@@ -41,6 +42,7 @@ async def index():
           return render_template("index.html", selected_comp=selected_comp, comps=web_comparisons)
         
         response_lines = await process_prompt(input_text, selected_comp)
+
         return render_template("index.html", response=response_lines, prompt=input_text, selected_comp=selected_comp, comps=web_comparisons) # Render the HTML page
     
     return render_template("index.html", selected_comp="1", comps=web_comparisons) # renders the page on a GET request
@@ -64,6 +66,12 @@ def configure():
       return jsonify(selected_options)
 
     return render_template('config.html', feature_sets=feature_sets, selected_options=selected_options)
+
+
+def convert_to_html_lines(lines):
+  for i in range(len(lines)):
+    lines[i] = lines[i].replace("\n", "<br>")
+  return lines
 
 def get_features():
     feature_sets = {

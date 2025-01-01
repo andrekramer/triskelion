@@ -27,7 +27,9 @@
         <h2 id="responseHeader">Response:</h2>
         <ul id="responseList">
         {% for line in response %}
-            <li>{{ line }}</li>
+            <li>
+                <pre style="white-space: pre-wrap;">{{ line }}</pre>
+            </li>
         {% endfor %}
         </ul>
     {% endif %}
