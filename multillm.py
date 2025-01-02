@@ -108,6 +108,8 @@ async def compare(session, model, comparison, trail, verbose = False):
   query = model.make_query(clean(comparison))
   if debug: print(query)
   response = await model.ask(session, query)
+  if response is None or response.strip() == "":
+    response = "{}"
   json_data = json.loads(response)
   if verbose:
     json_formatted_str = json.dumps(json_data, indent=2)
@@ -306,12 +308,18 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
     # Get 3rd model text
     i = 0
     text3 = ""
+    
     for model in models:
       if schedule[model.name]:
         if i == 2:
           display(trail, "Query next model " + model.name)
-          text3 = await model.ask(session, model.make_query(prompt))
-          text3 = text3.strip()
+          model3 = model
+          response = await model.ask(session, model.make_query(prompt))
+          if response is not None and response.strip() != "":
+            json_data = json.loads(response)
+            text3 = support.search_json(json_data, model.text_field)
+          else:
+            text3 = ""
           break
         else:
           i += 1
@@ -319,7 +327,10 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
     if text3 == "":
       display(trail, "3rd model failed to answer!")
       return None
-    
+    else:
+      display(trail, "model " + model3.name)
+      display(trail, text3)
+      
     eve = text3
     comparison2 = make_comparison(prompt, "Alice", alice, "Eve", eve)
     if debug: display(trail, comparison2)
