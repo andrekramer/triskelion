@@ -27,4 +27,6 @@ def make_answer_comparison(query, actor1, answer1, actor2, answer2):
            actor2 + " answered:\n" + add_full_stop(answer2) + "\n" + \
            answer_compare_instructions
 
+# Configure the type of comparison to make:
+
 make_comparison = make_answer_comparison

@@ -51,7 +51,7 @@ def get_diff_comparison_model(model1, model2):
     return comparison_model
 
 async def multi_way_query(prompt, max_models = max_no_models):
-  """Query the configured models in parallel and gather the responses. """
+  """Query the configured models in parallel and gather the responses"""
   promises = []
   async with getSession() as session:
 
@@ -125,12 +125,14 @@ async def compare(session, model, comparison, trail, verbose = False):
   else:
     return False
 
-
-async def compare_one_way(prompt, texts, trail, verbose = False):
-  """Compare the first two result texts. Return None if no matches"""
-  if len(texts) < 2:
+def ensure_texts(texts, count, trail):
+   if len(texts) < 2:
     display(trail, "Not enough responses to compare")
     return None
+   
+async def compare_one_way(prompt, texts, trail, verbose = False):
+  """Compare the first two result texts. Return None if no matches"""
+  ensure_texts(texts, 2, trail)
   
   alice = texts[0]
   bob = texts[1]
@@ -153,9 +155,7 @@ async def compare_one_way(prompt, texts, trail, verbose = False):
 
 async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose = False):
   """Compare the first 3 result texts 2 or 3 way. Return None if no matches"""
-  if len(texts) < 3:
-    display(trail, "Not enough responses to compare!")
-    return None
+  ensure_texts(texts, 3, trail)
   
   # 3 way comparison is possible
   alice = texts[0]
@@ -210,9 +210,7 @@ async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose =
 
 async def compare_all_three(prompt, texts, trail, verbose=False):
   """Compare the first 3 result texts in parallel"""
-  if len(texts) < 3:
-    display(trail, "Not enough responses to compare!")
-    return None
+  ensure_texts(texts, 3, trail)
  
   alice = texts[0]
   bob = texts[1]
@@ -284,9 +282,7 @@ async def compare_all_three(prompt, texts, trail, verbose=False):
 
 async def compare_two_first(prompt, texts, trail, verbose=False):
   """Compare 2 result texts first and only use a third if first 3 disagree """
-  if len(texts) < 2:
-    display(trail, "Not enough responses to compare!")
-    return None
+  ensure_texts(texts, 2, trail)
  
   alice = texts[0]
   bob = texts[1]
@@ -312,7 +308,7 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
     for model in models:
       if schedule[model.name]:
         if i == 2:
-          display(trail, "Query next model " + model.name)
+          if debug: display(trail, "query next model " + model.name)
           model3 = model
           response = await model.ask(session, model.make_query(prompt))
           if response is not None and response.strip() != "":
@@ -325,7 +321,7 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
           i += 1
 
     if text3 == "":
-      display(trail, "3rd model failed to answer!")
+      display(trail, f"3rd model {model3.name} failed to answer!")
       return None
     else:
       display(trail, "model " + model3.name)
@@ -355,12 +351,11 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
     if verbose: display(trail, "Compare second and third using " + model.name)
     response = await compare(session, model, comparison3, verbose)
     if response:
-     display(trail, f"second and third agree, can use {get_model(1).name}")
+      display(trail, f"second and third agree, can use {get_model(1).name}")
     return bob
   
   display(trail, "none agree")
   return None
-   
 
 def n_ways(trail, verbose=False):
   m = []
@@ -419,7 +414,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
     responses = await asyncio.gather(*promises)
 
   r = 0
-  # go over the comparison results
+  # go over the comparison results and add into quorums
   for comparison in comparison_pairs:
     model1, model2, compare_result = comparison
     if debug: display(trail, "Comparison response " + str(responses[r]))
@@ -443,7 +438,7 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   for model in run_models:
     model_count += 1
     q = quorums.get(model.name)
-    if q is not None and len(q) > quorum_size:
+    if q is not None and len(q) + 1 > quorum_size:
       quorum = model.name
       quorum_size = len(q) + 1
 
@@ -467,9 +462,30 @@ async def compare_n_way(prompt, response_texts, trail, verbose=False):
   return None
 
 
+# new comarison - add using following template here
+async def compare_new_template(prompt, texts, trail, verbose=False):
+  """ new comparison template """
+  N = 3 # say
+  ensure_texts(texts, N, trail)
+
+  async with getSession() as session:
+    promises = []
+    # comparison = make_comparison(prompt, "Alice", texts[0], "Bob", texts[1])
+    # promise = compare(session, comparison_model, comparison, verbose)
+    # promises.append(promise)
+
+    # responses = await asyncio.gather(*promises)
+    # for i in range(len(texts)):
+    #   if response[i]: return texts[i]
+
+  # return the compared text or None
+  return None
+
+
 async def run_comparison(prompt, action):
   trail = []
 
+  # new comparison - constrain the fan out here
   if action == "1-way" or action == "2-1":
     max_models = 2
   elif action in ["2-way", "3-way", "3-all"]:
@@ -483,6 +499,7 @@ async def run_comparison(prompt, action):
 
   compared_text = None
 
+  # new comarison - add here
   if action == "1-way":
     compared_text = await compare_one_way(prompt, texts, trail, True)
   elif action == "2-way":
@@ -500,6 +517,7 @@ async def run_comparison(prompt, action):
     display(trail, texts[0])
     return trail
   else:
+    display(trail, "FAIL")
     display(trail, "unknown compare action " + action)
     return trail
 
@@ -528,6 +546,7 @@ async def main():
     prompt = clean(sys.argv[2])
   else:
     print(
+       # new comarison - add here
 """Usage: python3 multillm.py 3-way|2-way|1-way|none|2-1|3-all|n-way prompt
           -- use given text as a prompt for multiple models and perform a comparison.
              1-way compare two responses

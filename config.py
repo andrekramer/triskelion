@@ -1,5 +1,6 @@
 import os
 
+# new model? Add key file here
 if not os.path.isfile("gemini-api-key") or \
    not os.path.isfile("claud-api-key") or \
    not os.path.isfile("openai-api-key") or \
@@ -9,6 +10,7 @@ if not os.path.isfile("gemini-api-key") or \
   print("please add api keys")
   exit(-1)
 
+# new model? import here
 from gemini import Gemini, Gemini2
 from claud import  Claud
 from openai import Openai, Openai2
@@ -17,10 +19,12 @@ from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
 from faulty import Faulty
 
+# new model? add here
 # The models and order of responses (skiping any not in schedule). Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
 models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2, Llama, Llama2, HugFace, HugFace2, HugFace3, Faulty]
 
+# new model? add here if to be used for comparisons
 # The models that can be used for comparisons (skipping any not in comparison schedule). 
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons. 
 # Can add a model more than once but that can't be configured via the Web UI.
@@ -42,6 +46,7 @@ max_no_models = 5
 T = True
 F = False
 
+# new model? add here 
 # Which models to query
 schedule = {
   "gemini": T,
@@ -59,6 +64,7 @@ schedule = {
   "faulty": F
 }
 
+# new model? add here if to be used for comparisons
 # Which models to use for comparisons
 comparison_schedule = {
   "gemini": T,
@@ -70,6 +76,7 @@ comparison_schedule = {
   "faulty": F
 }
 
+# new model? add the specific model version here if you want it to be configrable
 # model versions to use for queries
 model_versions = {
   "gemini": "gemini-1.5-flash-latest",
@@ -90,6 +97,7 @@ model_versions = {
 web_comparisons = ["1-way", "3-way", "n-way", "none" ]
 default_web_comparison = web_comparisons.index("3-way")
 
+# new model? add here if you want the model version to be configrable
 def configure():
   # Push down the model configuration to imported models to reflect any changes above.
   Gemini.model = model_versions["gemini"]

@@ -1,6 +1,10 @@
 import json
 
 class Model:
+    """Base class for all AI models"""
+    def make_query(text): raise RuntimeError("Not implemented")
+    async def ask(session, query): raise RuntimeError("Not implemented")
+    # fields to implement: name, model, text_field
     pass
 
 def serialize(json_object):

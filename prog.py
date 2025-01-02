@@ -11,8 +11,8 @@ async def main():
     prompt = "roll a die"
     response = await multillm.run_comparison(prompt, "3-way")
 
-    print(response[-2])
-    print(response[-1])
+    print(response[-2]) # PASS or FAIL?
+    print(response[-1]) # the response if a PASS
 
 if __name__ == "__main__":
   asyncio.run(main())
