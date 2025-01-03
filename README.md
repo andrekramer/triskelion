@@ -4,7 +4,10 @@
 
 ## Query and compare multiple AI models (e.g. 3 LLMs) in parallel
 
-Please see https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models   
+Please see   
+https://andrekramermsc.substack.com/p/triskelion-an-ai-model-comparator   
+and   
+https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models   
 
 Query multiple LLMs and compare results to help suppress model errors.   
 The models to use and comparison action are configurable (see config.py, comparison.py).   
