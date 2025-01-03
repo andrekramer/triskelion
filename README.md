@@ -11,12 +11,14 @@ The models to use and comparison action are configurable (see config.py, compari
 Different flavous of comparisons are possible. "3-way" is probaly the sweet spot as it can mask one error.   
 
 To install please use the py-install script to locally add ependencies (tested on Python 3.12.3).   
-Create files with api keys for the models:    
+Create files with api keys for the models (start with "source touch-api-keys.sh"):    
 claud-api-key, openai-api-key, llama-api-key, grok-api-key gemini-api-key hugface-api-key   
   
 You need 3 models configured to be able to mask one error (e.g. using 3-way comparison hence Triskelion).   
 Hint: You can use 3 models from HuggingFace by editing the config and adding just one (free) api key   
 and set the other api keys to dummy values.
+
+Free to use. USE AT YOUR OWN RISK!
 
 ## Usage:   
 python3 multillm.py 3-way|2-way|1-way|2-1|3-all|none|n-way prompt   
