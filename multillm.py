@@ -124,10 +124,9 @@ async def compare(session, model, comparison, trail, verbose = False):
     if response is None or response.strip() == "":
         response = "{}"
     json_data = json.loads(response)
-    if verbose:
+    if DEBUG:
         json_formatted_str = json.dumps(json_data, indent=2)
-        if DEBUG:
-            print(json_formatted_str)
+        print(json_formatted_str)
     text = support.search_json(json_data, model.text_field)
     if text is None:
         if verbose:
@@ -155,13 +154,13 @@ async def compare_one_way(prompt, texts, trail, verbose = False):
     bob = texts[1]
 
     comparison = make_comparison(prompt, "Alice", alice, "Bob", bob)
-    if DEBUG:
+    if verbose:
         display(trail, comparison)
 
     async with get_session() as session:
         model = __get_comparator_1(trail, verbose)
 
-        if await compare(session, model, comparison, verbose):
+        if await compare(session, model, comparison, trail, verbose):
             if verbose:
                 display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
             return alice
@@ -186,7 +185,7 @@ async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose =
 
         model = __get_comparator_1(trail, verbose)
 
-        if await compare(session, model, comparison1, verbose):
+        if await compare(session, model, comparison1, trail, verbose):
             if verbose:
                 display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
             return alice
@@ -197,7 +196,7 @@ async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose =
 
         model = __get_comparator_2(trail, verbose)
 
-        if await compare(session, model, comparison2, verbose):
+        if await compare(session, model, comparison2, trail, verbose):
             if verbose:
                 display(trail, f"comparison {model.name} succeeds, can use {get_model(0).name}")
             return alice
@@ -211,7 +210,7 @@ async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose =
 
         model = __get_comparator_3(trail, verbose)
 
-        if await compare(session, model, comparison3, verbose):
+        if await compare(session, model, comparison3, trail, verbose):
             if verbose:
                 display(trail,
                         f"comparison {model.name} succeeds, can use {get_model(1).name}")
@@ -276,17 +275,17 @@ async def compare_all_three(prompt, texts, trail, verbose=False):
 
         model = __get_comparator_1(trail, verbose)
 
-        promise = compare(session, model, comparison1, verbose)
+        promise = compare(session, model, comparison1, trail, verbose)
         promises.append(promise)
 
         model = __get_comparator_2(trail, verbose)
 
-        promise = compare(session, model, comparison2, verbose)
+        promise = compare(session, model, comparison2, trail, verbose)
         promises.append(promise)
 
         model = __get_comparator_3(trail, verbose)
 
-        promise = compare(session, model, comparison3, verbose)
+        promise = compare(session, model, comparison3, trail, verbose)
         promises.append(promise)
 
         responses = await asyncio.gather(*promises)
@@ -323,7 +322,7 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
 
     async with get_session() as session:
         model = __get_comparator_1(trail, verbose)
-        response = await compare(session, model, comparison1, verbose)
+        response = await compare(session, model, comparison1, trail, verbose)
         if response:
             display(trail, f"first two models agree, can use {get_model(0).name}")
             return alice
@@ -344,7 +343,7 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
             display(trail, comparison2)
 
         model = __get_comparator_2(trail, verbose)
-        response = await compare(session, model, comparison2, verbose)
+        response = await compare(session, model, comparison2, trail, verbose)
         if response:
             display(trail, f"first and third agree, can use {get_model(0).name}")
             return alice
@@ -354,7 +353,7 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
             display(trail, comparison3)
 
         model = __get_comparator_3(trail, verbose)
-        response = await compare(session, model, comparison3, verbose)
+        response = await compare(session, model, comparison3, trail, verbose)
         if response:
             display(trail, f"second and third agree, can use {get_model(1).name}")
         return bob
@@ -486,7 +485,7 @@ async def __ask_n(prompt, comp_models, response_map, trail, verbose):
                 display(trail, "comparison model selected: " + comparison_model.name)
             comp_models.append(comparison_model)
 
-            promise = compare(session, comparison_model, comparison, verbose)
+            promise = compare(session, comparison_model, comparison, trail, verbose)
             promises.append(promise)
 
         responses = await asyncio.gather(*promises)
