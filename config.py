@@ -62,7 +62,7 @@ comparison_schedule = {
   "openai": T,
   "claud": T,
   "grok2": F,
-  "llama": F,
+  "llama": T,
   "hugface": F,
   "faulty": F
 }
@@ -85,7 +85,7 @@ model_versions = {
 }
 
 
-web_comparisons = ["1-way", "3-way", "n-way", "none" ]
+web_comparisons = ["1-way", "3-way", "3-twice", "n-way"]
 default_web_comparison = web_comparisons.index("3-way")
 
 # new model? add here if you want the model version to be configrable
@@ -115,6 +115,8 @@ class Config:
     # use another model for comparison than those used for queries if true
     # use models from the comparion list in order if false.
     diff_comparator = True
+    # Always use first comparison model if single simparator is true. Overrides diff comparator.
+    single_comparator = False
 
     @classmethod
     def get_diff_comparator(cls):
@@ -125,6 +127,16 @@ class Config:
     def set_diff_comparator(cls, value):
         """set diff comparator config"""
         cls.diff_comparator = value
+
+    @classmethod
+    def get_single_comparator(cls):
+        """get single comparator config"""
+        return cls.single_comparator
+
+    @classmethod
+    def set_single_comparator(cls, value):
+        """set single comparator config"""
+        cls.single_comparator = value
 
     @classmethod
     def set_trail_only(cls, b):

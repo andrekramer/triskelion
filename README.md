@@ -39,6 +39,7 @@ python3 multillm.py n-way "What is the longest river on Mars?"
              3-way compare three responses to see if any two agree     
              2-1 compare 2 responses and go on to a third only if first two disagree    
              3-all compare three responses all ways    
+             3-twice compare three responses twice   
              n-way compare all the responses each way   
              none can be used to just query and not do a comparison    
 

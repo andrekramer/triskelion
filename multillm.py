@@ -41,13 +41,13 @@ def get_comparison_model(i):
         i -= 1
     return get_comparison_model(i)
 
-def get_diff_comparison_model(model1, model2):
+def get_diff_comparison_model(model1, model2, model3 = None):
     """get a different comparison model from two models passed as args"""
     comparison_model = None
     for cm in comparison_models:
         if not comparison_schedule[cm.name]:
             continue
-        if cm.name not in (model1.name, model2.name):
+        if cm.name not in (model1.name, model2.name, "" if model3 is None else model3.name):
             comparison_model = cm
             break
 
@@ -219,7 +219,9 @@ async def compare_two_or_three_way(prompt, texts, two_way_only, trail, verbose =
         return None
 
 def __get_comparator_3(trail, verbose):
-    if Config.get_diff_comparator():
+    if Config.get_single_comparator():
+        model = get_comparison_model(0)
+    elif Config.get_diff_comparator():
         model = get_diff_comparison_model(get_model(1), get_model(2))
     else:
         model = get_comparison_model(2)
@@ -228,7 +230,9 @@ def __get_comparator_3(trail, verbose):
     return model
 
 def __get_comparator_2(trail, verbose):
-    if Config.get_diff_comparator():
+    if Config.get_single_comparator():
+        model = get_comparison_model(0)
+    elif Config.get_diff_comparator():
         model = get_diff_comparison_model(get_model(0), get_model(2))
     else:
         model = get_comparison_model(1)
@@ -237,12 +241,47 @@ def __get_comparator_2(trail, verbose):
     return model
 
 def __get_comparator_1(trail, verbose):
+    if Config.get_single_comparator():
+        model = get_comparison_model(0)
     if Config.get_diff_comparator():
         model = get_diff_comparison_model(get_model(0), get_model(1))
     else:
         model = get_comparison_model(0)
     if verbose:
         display(trail, f"using model {model.name} for comparison")
+    return model
+
+def __get_second_comparator_1(model, trail, verbose):
+    if Config.get_single_comparator():
+        model = get_comparison_model(1)
+    elif Config.get_diff_comparator():
+        model = get_diff_comparison_model(get_model(0), get_model(1), model)
+    else:
+        model = get_comparison_model(1)
+    if verbose:
+        display(trail, f"using model {model.name} for second comparison")
+    return model
+
+def __get_second_comparator_2(model, trail, verbose):
+    if Config.get_single_comparator():
+        model = get_comparison_model(1)
+    elif Config.get_diff_comparator():
+        model = get_diff_comparison_model(get_model(0), get_model(2), model)
+    else:
+        model = get_comparison_model(2)
+    if verbose:
+        display(trail, f"using model {model.name} for second comparison")
+    return model
+
+def __get_second_comparator_3(model, trail, verbose):
+    if Config.get_single_comparator():
+        model = get_comparison_model(1)
+    elif Config.get_diff_comparator():
+        model = get_diff_comparison_model(get_model(1), get_model(2), model)
+    else:
+        model = get_comparison_model(3)
+    if verbose:
+        display(trail, f"using model {model.name} for third comparison")
     return model
 
 
@@ -360,6 +399,76 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
 
     display(trail, "none agree")
     return None
+
+
+async def compare_twice_three_way(prompt, texts, trail, verbose = False):
+    """Compare the first 3 result twice. Return None if no matches"""
+    if ensure_texts(texts, 3, trail):
+        return None
+
+    alice = texts[0]
+    bob = texts[1]
+    eve = texts[2]
+
+    comparison1 =  make_comparison(prompt, "Alice", alice, "Bob", bob)
+    if DEBUG:
+        display(trail, comparison1)
+
+    async with get_session() as session:
+
+        responses = await __compare_1_twice(trail, verbose, comparison1, session)
+        if all(responses):
+            if verbose:
+                display(trail, f"compare twice succeeds, can use {get_model(0).name}")
+            return alice
+
+        comparison2 =  make_comparison(prompt, "Alice", alice, "Eve", eve)
+        if DEBUG:
+            display(trail, comparison2)
+
+        responses = await __compare_2_twice(trail, verbose, session, comparison2)
+        if all(responses):
+            if verbose:
+                display(trail, f"second compare twice succeeds, can use {get_model(0).name}")
+            return alice
+
+        comparison3 =  make_comparison(prompt, "Bob", bob, "Eve", eve)
+        if DEBUG:
+            display(trail, comparison3)
+
+        responses = await __compare_3_twice(trail, verbose, session, comparison3)
+        if all(responses):
+            if verbose:
+                display(trail,
+                        f"third compare twice succeeds, can use {get_model(1).name}")
+            return bob
+
+        return None
+
+async def __compare_3_twice(trail, verbose, session, comparison3):
+    model = __get_comparator_3(trail, verbose)
+    model2 = __get_second_comparator_3(model, trail, verbose)
+
+    return await __compare_twice(session, comparison3, model, model2, trail, verbose)
+
+async def __compare_2_twice(trail, verbose, session, comparison2):
+    model = __get_comparator_2(trail, verbose)
+    model2 = __get_second_comparator_2(model, trail, verbose)
+
+    return await __compare_twice(session, comparison2, model, model2, trail, verbose)
+
+async def __compare_1_twice(trail, verbose, comparison1, session):
+    model = __get_comparator_1(trail, verbose)
+    model2 = __get_second_comparator_1(model, trail, verbose)
+
+    return await __compare_twice(session, comparison1, model, model2, trail, verbose)
+
+async def __compare_twice(session, comparison, model, model2, trail, verbose):
+    promise1 = compare(session, model, comparison, trail, verbose)
+    promise2 = compare(session, model2, comparison, trail, verbose)
+
+    responses = await asyncio.gather(promise1, promise2)
+    return responses
 
 async def __ask_next_model(prompt, trail, session):
     i = 0
@@ -573,6 +682,8 @@ async def __run_action(action, prompt, texts, trail):
         compared_text = await compare_two_first(prompt, texts, trail, True)
     elif action == "3-all":
         compared_text = await compare_all_three(prompt, texts, trail, True)
+    elif action == "3-twice":
+        compared_text = await compare_twice_three_way(prompt, texts, trail, True)
     elif action == "n-way":
         compared_text = await compare_n_way(prompt, texts, trail, True)
     elif action == "none":
@@ -619,6 +730,7 @@ async def main():
                  3-way compare three responses to see if any two agree
                  2-1 compare 2 responses and go on to a third only if first two fail to agree
                  3-all compare three responses all ways
+                 3-twice compare three responses twice
                  n-way compare all the responses each way
                  none can be used to just query and not do a comparison
 
