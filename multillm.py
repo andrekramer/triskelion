@@ -449,23 +449,23 @@ async def __compare_3_twice(trail, verbose, session, comparison3):
     model = __get_comparator_3(trail, verbose)
     model2 = __get_second_comparator_3(model, trail, verbose)
 
-    return await __compare_twice(session, comparison3, model, model2, trail, verbose)
+    return await __compare_twice(session, comparison3, (model, model2), trail, verbose)
 
 async def __compare_2_twice(trail, verbose, session, comparison2):
     model = __get_comparator_2(trail, verbose)
     model2 = __get_second_comparator_2(model, trail, verbose)
 
-    return await __compare_twice(session, comparison2, model, model2, trail, verbose)
+    return await __compare_twice(session, comparison2, (model, model2), trail, verbose)
 
 async def __compare_1_twice(trail, verbose, comparison1, session):
     model = __get_comparator_1(trail, verbose)
     model2 = __get_second_comparator_1(model, trail, verbose)
 
-    return await __compare_twice(session, comparison1, model, model2, trail, verbose)
+    return await __compare_twice(session, comparison1, (model, model2), trail, verbose)
 
-async def __compare_twice(session, comparison, model, model2, trail, verbose):
-    promise1 = compare(session, model, comparison, trail, verbose)
-    promise2 = compare(session, model2, comparison, trail, verbose)
+async def __compare_twice(session, comparison, model_pair, trail, verbose):
+    promise1 = compare(session, model_pair[0], comparison, trail, verbose)
+    promise2 = compare(session, model_pair[1], comparison, trail, verbose)
 
     responses = await asyncio.gather(promise1, promise2)
     return responses

@@ -110,13 +110,17 @@ MAX_NO_MODELS = 5
 
 class Config:
     """Configuration Helper"""
+    # timeout on model querries in seconds - set high for thinking models
     client_timeout_seconds = 30
+    # only write to the trail if true else also write to console
     trail_only = True
     # use another model for comparison than those used for queries if true
     # use models from the comparion list in order if false.
     diff_comparator = True
     # Always use first comparison model if single simparator is true. Overrides diff comparator.
     single_comparator = False
+    # Justify comparisons with explanations if true
+    justify = False
 
     @classmethod
     def get_diff_comparator(cls):
@@ -142,6 +146,16 @@ class Config:
     def set_trail_only(cls, b):
         """set trail only config"""
         cls.trail_only = b
+
+    @classmethod
+    def set_justify(cls, value):
+        """set justify config"""
+        cls.justify = value
+
+    @classmethod
+    def get_justify(cls):
+        """get justify config"""
+        return cls.justify
 
 def display(trail, text):
     """display to trail and conditionally to console"""

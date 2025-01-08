@@ -72,6 +72,7 @@ def configure_comparison():
 
         Config.set_single_comparator("single-compare" in selected_options)
         Config.set_diff_comparator("diff-comparisons" in selected_options)
+        Config.set_justify("justify" in selected_options)
 
         return jsonify(selected_options)
 
@@ -126,6 +127,8 @@ def get_features():
         selected_options.append("single-compare")
     if Config.get_diff_comparator():
         selected_options.append("diff-comparisons")
+    if Config.get_justify():
+        selected_options.append("justify")
 
     options.append({
        "name": "use first model for all comparisons",
@@ -134,6 +137,10 @@ def get_features():
     options.append({
        "name": "or use different model for comparisons or each in turn",
         "id": "diff-comparisons"
+    })
+    options.append({
+        "name": "justify comparisons",
+        "id": "justify"
     })
 
     feature_sets["others"]["options"] = options

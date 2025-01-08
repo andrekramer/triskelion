@@ -1,6 +1,8 @@
 
 """Comparison prompts"""
 
+from config import Config
+
 STATEMENT_COMPARE_INSTRUCTIONS = \
     "\nCompare their two statements and say YES if they are equivalent." + \
     " Otherwise say NO." + \
@@ -15,6 +17,13 @@ ANSWER_COMPARE_INSTRUCTIONS = \
     " Additional information provided by one answer does not matter unless" + \
     " it contradicts the other answer."
 
+JUSTIFY_INSTRUCTIONS = \
+    "\nJustify your answer by explaining why " + \
+    "you think the two statements or answers are equivalent or not."
+
+def __get_justify_instructions():
+    return JUSTIFY_INSTRUCTIONS if Config.get_justify() else ""
+
 def add_full_stop(s):
     """add a full stop at end of string"""
     if s.strip().endswith("."):
@@ -27,7 +36,7 @@ def make_statement_comparison(query, actor1, statement1, actor2, statement2):
         return ""
     return "" + actor1 + " says:\n" + add_full_stop(statement1) + "\n\n" + \
            actor2 + " says:\n" + add_full_stop(statement2) + "\n" + \
-           STATEMENT_COMPARE_INSTRUCTIONS
+           STATEMENT_COMPARE_INSTRUCTIONS + __get_justify_instructions()
 
 def make_answer_comparison(query, actor1, answer1, actor2, answer2):
     """make an answer comparison style prompt"""
@@ -37,7 +46,7 @@ def make_answer_comparison(query, actor1, answer1, actor2, answer2):
            add_full_stop(query) + "\n\n" + actor1 + \
            " answered:\n" + add_full_stop(answer1) + "\n\n" + \
            actor2 + " answered:\n" + add_full_stop(answer2) + "\n" + \
-           ANSWER_COMPARE_INSTRUCTIONS
+           ANSWER_COMPARE_INSTRUCTIONS + __get_justify_instructions()
 
 # Configure the type of comparison to make:
 
