@@ -35,6 +35,11 @@ async def prompt_comparison():
 
 @app.route("/", methods=["GET", "POST"])
 async def index():
+    """default web methdd"""
+    return await compare()
+
+@app.route("/compare", methods=["GET", "POST"])
+async def compare():
     """main web methdd"""
     if request.method == "POST":
         input_text = request.form["text_input"]
@@ -42,17 +47,18 @@ async def index():
         print("selected comp " + selected_comp)
 
         if input_text is None or input_text.strip() == "":
-            return render_template("index.html", selected_comp=selected_comp, comps=web_comparisons)
+            return render_template("compare.html",
+                                   selected_comp=selected_comp, comps=web_comparisons)
 
         response_lines = await process_prompt(input_text, selected_comp)
 
-        return render_template("index.html",
+        return render_template("compare.html",
                                response=response_lines,
                                prompt=input_text,
                                selected_comp=selected_comp,
                                comps=web_comparisons) # Render the HTML page
 
-    return render_template("index.html",
+    return render_template("compare.html",
                            selected_comp="1",
                            comps=web_comparisons) # renders the page on a GET request
 
