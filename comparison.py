@@ -5,7 +5,7 @@ from config import Config
 
 STATEMENT_COMPARE_INSTRUCTIONS = \
     "\nCompare their two statements and say YES if they are equivalent." + \
-    " Otherwise say NO." + \
+    " Otherwise say NO before any explanations." + \
     " Make a functional comparison and ignore phrasing differences." + \
     " Additional information provided by one statement does not matter unless" + \
     " it contracts the other statement."
@@ -30,11 +30,12 @@ def add_full_stop(s):
         return s
     return s + "."
 
-def make_statement_comparison(query, actor1, statement1, actor2, statement2):
+def make_statement_comparison(actor1, statement1, actor2, statement2):
     """make a statement comparison style prompt"""
     if statement1.strip() == "" or statement2.strip() == "":
         return ""
-    return "" + actor1 + " says:\n" + add_full_stop(statement1) + "\n\n" + \
+    return actor1 + " and " + actor2 + " make two statements.\n" + \
+           actor1 + " says:\n" + add_full_stop(statement1) + "\n\n" + \
            actor2 + " says:\n" + add_full_stop(statement2) + "\n" + \
            STATEMENT_COMPARE_INSTRUCTIONS + __get_justify_instructions()
 
@@ -48,6 +49,10 @@ def make_answer_comparison(query, actor1, answer1, actor2, answer2):
            actor2 + " answered:\n" + add_full_stop(answer2) + "\n" + \
            ANSWER_COMPARE_INSTRUCTIONS + __get_justify_instructions()
 
-# Configure the type of comparison to make:
 
-make_comparison = make_answer_comparison
+def make_comparison(query, actor1, statement1, actor2, statement2):
+    """make a comparison promp based on the config"""
+    if Config.include_query:
+        return make_answer_comparison(query, actor1, statement1, actor2, statement2)
+
+    return make_statement_comparison(actor1, statement1, actor2, statement2)

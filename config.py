@@ -77,8 +77,8 @@ model_versions = {
   "openai2": "chatgpt-4o-latest",
   "grok": "grok-beta",
   "grok2": "grok-2-latest",
-  "llama": "llama3-8b",
-  "llama2": "llama3.3-70b",
+  "llama": "llama3.3-70b",
+  "llama2": "llama3-8b",
   "hugface": "google/gemma-2-2b-it",
   "hugface2": "microsoft/Phi-3-mini-4k-instruct",
   "hugface3": "Qwen/Qwen2.5-7B-Instruct"
@@ -121,6 +121,9 @@ class Config:
     single_comparator = False
     # Justify comparisons with explanations if true
     justify = False
+    # include query in comparison prompts in an answer style comparison
+    # or make a statement style comparison (without including the original query) if false
+    include_query = True
 
     @classmethod
     def get_diff_comparator(cls):
@@ -156,6 +159,16 @@ class Config:
     def get_justify(cls):
         """get justify config"""
         return cls.justify
+
+    @classmethod
+    def get_include_query(cls):
+        """get include query config"""
+        return cls.include_query
+
+    @classmethod
+    def set_include_query(cls, value):
+        """set include query config"""
+        cls.include_query = value
 
 def display(trail, text):
     """display to trail and conditionally to console"""
