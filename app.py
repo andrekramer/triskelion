@@ -144,7 +144,7 @@ def get_features():
         "id": "single-compare"
     })
     options.append({
-       "name": "or use different model for comparisons or each in turn",
+       "name": "or use different model for comparisons or each in turn.",
         "id": "diff-comparisons"
     })
     options.append({
