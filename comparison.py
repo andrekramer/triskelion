@@ -30,13 +30,19 @@ def add_full_stop(s):
         return s
     return s + "."
 
+def quote(s):
+    """quote a reponse"""
+    return s
+    #return "<response>" + s + "</response>"
+    #return "<quote>" + s + "</quote>"
+
 def make_statement_comparison(actor1, statement1, actor2, statement2):
     """make a statement comparison style prompt"""
     if statement1.strip() == "" or statement2.strip() == "":
         return ""
     return actor1 + " and " + actor2 + " make two statements.\n" + \
-           actor1 + " says:\n" + add_full_stop(statement1) + "\n\n" + \
-           actor2 + " says:\n" + add_full_stop(statement2) + "\n" + \
+           actor1 + " says:\n" + quote(add_full_stop(statement1)) + "\n\n" + \
+           actor2 + " says:\n" + quote(add_full_stop(statement2)) + "\n" + \
            STATEMENT_COMPARE_INSTRUCTIONS + __get_justify_instructions()
 
 def make_answer_comparison(query, actor1, answer1, actor2, answer2):
@@ -44,9 +50,9 @@ def make_answer_comparison(query, actor1, answer1, actor2, answer2):
     if answer1.strip() == "" or answer2.strip() == "":
         return ""
     return "When " + actor1 + " and " + actor2 + " were asked the following:\n" + \
-           add_full_stop(query) + "\n\n" + actor1 + \
-           " answered:\n" + add_full_stop(answer1) + "\n\n" + \
-           actor2 + " answered:\n" + add_full_stop(answer2) + "\n" + \
+           quote(add_full_stop(query)) + "\n\n" + actor1 + \
+           " answered:\n" + quote(add_full_stop(answer1)) + "\n\n" + \
+           actor2 + " answered:\n" + quote(add_full_stop(answer2)) + "\n" + \
            ANSWER_COMPARE_INSTRUCTIONS + __get_justify_instructions()
 
 

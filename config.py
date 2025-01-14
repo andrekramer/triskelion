@@ -88,6 +88,12 @@ model_versions = {
 web_comparisons = ["1-way", "3-way", "3-twice", "n-way"]
 default_web_comparison = web_comparisons.index("3-way")
 
+web_critiques = ["critique", "summarize", "rank"]
+default_web_critique = web_critiques.index("critique")
+
+
+actors = ["Alice", "Bob", "Eve", "Jane", "John", "Mary", "Sam", "Sue", "Tom", "Zoe"]
+
 # new model? add here if you want the model version to be configrable
 def configure():
     """Push down the model configuration to imported models to reflect any changes above."""
@@ -107,6 +113,8 @@ def configure():
 DEBUG = False
 
 MAX_NO_MODELS = 5
+
+DEFAULT_NO_MODELS = 3
 
 class Config:
     """Configuration Helper"""
