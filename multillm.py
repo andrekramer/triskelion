@@ -141,7 +141,7 @@ async def compare(session, model, comparison, trail, verbose = False):
 
 async def query_critique(session, model, critque, trail, verbose = False):
     """query for critique using given model"""
-  
+
     query = model.make_query(clean(critque))
     if DEBUG:
         print(query)
@@ -728,36 +728,36 @@ async def __run_compare_action(action, prompt, texts, trail):
 
     return trail
 
-async def __critique(critique, trail, verbose=False):
+async def __critique(query, trail, verbose=False):
     if DEBUG:
-        print(critique)
+        print(query)
 
     model = get_comparison_model(0)
     if verbose:
-        display(trail, "comparison model " + model.name)
+        display(trail, "critique model " + model.name)
 
     async with get_session() as session:
-        critique = await query_critique(session, model, critique, trail, verbose=False)
+        response = await query_critique(session, model, query, trail, verbose=False)
         if verbose:
-            display(trail, critique)
-        return critique
+            display(trail, response)
+        return response
 
 async def critique(prompt, combined_texts, trail):
     """critique the responses"""
-    critique = make_critique(prompt, combined_texts)
-    await __critique(critique, trail, verbose=True)
+    query = make_critique(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
     return trail
 
 async def summarize(prompt, combined_texts, trail):
     """summarize the responses"""
-    critique = make_summary(prompt, combined_texts)
-    await __critique(critique, trail, verbose=True)
+    query = make_summary(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
     return trail
 
 async def rank(prompt, combined_texts, trail):
     """rank the responses"""
-    critique = make_ranking(prompt, combined_texts)
-    await __critique(critique, trail, verbose=True)
+    query = make_ranking(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
     return trail
 
 async def timed_comparison(prompt, action, no_models):
