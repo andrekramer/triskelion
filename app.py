@@ -87,7 +87,7 @@ async def critique():
         response_lines = await process_critique(input_text, selected_critique, no_models)
 
         return render_template("critique.html",
-                               no_models=DEFAULT_NO_MODELS,
+                               no_models=no_models,
                                response=response_lines,
                                prompt=input_text,
                                selected_critique=selected_critique,
