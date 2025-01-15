@@ -90,3 +90,12 @@ def make_ranking(query, statements):
     else:
         rank = "Rank the following statements.\n\n"
     return rank + statements
+
+def make_combiner(query, statements):
+    """make a combiner prompt"""
+    if Config.include_query:
+        combiner = "Combine the following answers to this query into a concensus opinion:\n\n" + \
+            quote(query) + "\n\n"
+    else:
+        combiner = "Combine the following statements into a concensus opinion.\n\n"
+    return combiner + statements

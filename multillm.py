@@ -9,7 +9,8 @@ import aiohttp
 from config import models, schedule, comparison_models, comparison_schedule, configure
 from config import MAX_NO_MODELS, display, DEBUG, actors, Config
 import support
-from comparison import make_comparison, make_critique, make_summary, make_ranking, \
+from comparison import make_comparison, \
+    make_critique, make_summary, make_ranking, make_combiner, \
     add_full_stop, quote
 
 # Add current directory to import path when using this file as a module.
@@ -760,6 +761,12 @@ async def rank(prompt, combined_texts, trail):
     await __critique(query, trail, verbose=True)
     return trail
 
+async def combine(prompt, combined_texts, trail):
+    """combine the responses"""
+    query = make_combiner(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
+    return trail
+
 async def timed_comparison(prompt, action, no_models):
     """time a comparison"""
     start_time = time.time()
@@ -802,6 +809,9 @@ async def __run_critque_action(action, prompt, texts, trail):
 
     elif action == "rank":
         await rank(prompt, combined_texts, trail)
+
+    elif action == "combine":
+        await combine(prompt, combined_texts, trail)
 
     else:
         display(trail, "FAIL")
@@ -852,7 +862,7 @@ async def main():
               -- use given text as a prompt for the number of models specified
                  and perform a critique.
                  number_of_models should be a number between 1 and 5 inclusive.
-                 Critque can be "critique", "summarize" or "rank"
+                 xyz (the type of critique) can be "critique", "summarize", "rank" or "combine"
               """)
         sys.exit()
 
