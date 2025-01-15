@@ -7,9 +7,11 @@ import asyncio
 import aiohttp
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import MAX_NO_MODELS, display, DEBUG, Config
+from config import MAX_NO_MODELS, display, DEBUG, actors, Config
 import support
-from comparison import make_comparison
+from comparison import make_comparison, \
+    make_critique, make_summary, make_ranking, make_combiner, \
+    add_full_stop, quote
 
 # Add current directory to import path when using this file as a module.
 # Say with "from <some-dir> import multillm".
@@ -106,6 +108,7 @@ def parse_responses(responses, trail, verbose=False):
         else:
             if verbose:
                 display(trail, "No response text found!")
+                print(json_formatted_str)
             response_texts.append("")
         i += 1
         if i == len(responses):
@@ -136,6 +139,29 @@ async def compare(session, model, comparison, trail, verbose = False):
         display(trail, f"comparison using {model.name} result:\n" + text)
 
     return text.find("YES") != -1 and text.find("NO") == -1
+
+async def query_critique(session, model, critque, trail, verbose = False):
+    """query for critique using given model"""
+
+    query = model.make_query(clean(critque))
+    if DEBUG:
+        print(query)
+    response = await model.ask(session, query)
+    if response is None or response.strip() == "":
+        response = "{}"
+    json_data = json.loads(response)
+    if DEBUG:
+        json_formatted_str = json.dumps(json_data, indent=2)
+        print(json_formatted_str)
+    text = support.search_json(json_data, model.text_field)
+    if text is None:
+        if verbose:
+            display(trail, f"critique using {model.name} failed!")
+        return "FAIL"
+    if verbose:
+        display(trail, f"critique using {model.name} result:\n" + text)
+
+    return text
 
 def ensure_texts(texts, count, trail):
     """ensure there are enough responses to compare"""
@@ -651,7 +677,6 @@ async def compare_new_template(prompt, texts, trail, verbose=False):
     # return the compared text or None
     return None
 
-
 async def run_comparison(prompt, action):
     """run a comparison"""
     trail = []
@@ -668,9 +693,9 @@ async def run_comparison(prompt, action):
 
     texts = parse_responses(responses, trail, True)
 
-    return await __run_action(action, prompt, texts, trail)
+    return await __run_compare_action(action, prompt, texts, trail)
 
-async def __run_action(action, prompt, texts, trail):
+async def __run_compare_action(action, prompt, texts, trail):
     # new comarison - add here
     if action == "1-way":
         compared_text = await compare_one_way(prompt, texts, trail, True)
@@ -704,23 +729,114 @@ async def __run_action(action, prompt, texts, trail):
 
     return trail
 
-async def timed_comparison(prompt, action):
+async def __critique(query, trail, verbose=False):
+    if DEBUG:
+        print(query)
+
+    model = get_comparison_model(0)
+    if verbose:
+        display(trail, "critique model " + model.name)
+
+    async with get_session() as session:
+        response = await query_critique(session, model, query, trail, verbose=False)
+        if verbose:
+            display(trail, response)
+        return response
+
+async def critique(prompt, combined_texts, trail):
+    """critique the responses"""
+    query = make_critique(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
+    return trail
+
+async def summarize(prompt, combined_texts, trail):
+    """summarize the responses"""
+    query = make_summary(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
+    return trail
+
+async def rank(prompt, combined_texts, trail):
+    """rank the responses"""
+    query = make_ranking(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
+    return trail
+
+async def combine(prompt, combined_texts, trail):
+    """combine the responses"""
+    query = make_combiner(prompt, combined_texts)
+    await __critique(query, trail, verbose=True)
+    return trail
+
+async def timed_comparison(prompt, action, no_models):
     """time a comparison"""
     start_time = time.time()
 
-    await run_comparison(prompt, action)
+    if no_models == -1:
+        await run_comparison(prompt, action)
+    else:
+        await run_critique(prompt, action, no_models)
 
     end_time = time.time()
     print(f"Time taken: {end_time - start_time:.2f} seconds")
+
+async def run_critique(prompt, action, no_models):
+    """run a critique over no_models models"""
+    trail = []
+
+    responses = await multi_way_query(prompt, no_models)
+
+    texts = parse_responses(responses, trail, True)
+    return await __run_critque_action(action, prompt, texts, trail)
+
+async def __run_critque_action(action, prompt, texts, trail):
+    """run a critique action"""
+
+    combined_texts = ""
+    i = 0
+    for text in texts:
+        name = actors[i]
+        actor_text = ("" if i == 0 else "\n") + str(i + 1) + ". " + name + " says:\n\n"
+        combined_texts +=  actor_text + quote(add_full_stop(text)) + "\n"
+        i += 1
+
+    display(trail, combined_texts)
+
+    if action == "critique":
+        await critique(prompt, combined_texts, trail)
+
+    elif action == "summarize":
+        await summarize(prompt, combined_texts, trail)
+
+    elif action == "rank":
+        await rank(prompt, combined_texts, trail)
+
+    elif action == "combine":
+        await combine(prompt, combined_texts, trail)
+
+    else:
+        display(trail, "FAIL")
+        display(trail, "unknown critique action " + action)
+        return trail
+
+    return trail
 
 async def main():
     """multi llm main - parse args and run a comparison"""
     Config.set_trail_only(False)
 
+    action = "unkown"
+    prompt = ""
+    no_models = -1
     if len(sys.argv) > 2:
         action = sys.argv[1]
         prompt = clean(sys.argv[2])
-    else:
+
+    if len(sys.argv) == 4:
+        no_models = int(sys.argv[3])
+        if no_models < 1 or no_models > MAX_NO_MODELS:
+            print("Number of models when specified must be > 1 and <= 5")
+            sys.exit()
+    elif len(sys.argv) != 3:
         print(
            # new comarison - add here
     """Usage: python3 multillm.py 3-way|2-way|1-way|none|2-1|3-all|n-way prompt
@@ -741,6 +857,12 @@ async def main():
               python3 multillm.py xyz interactive
               --- start an interactive loop to read prompts. 
               You can end this using Crtl-C or by typing "bye"
+
+              python3 multillm.py xyz prompt number_of_models 
+              -- use given text as a prompt for the number of models specified
+                 and perform a critique.
+                 number_of_models should be a number between 1 and 5 inclusive.
+                 xyz (the type of critique) can be "critique", "summarize", "rank" or "combine"
               """)
         sys.exit()
 
@@ -755,13 +877,13 @@ async def main():
             if p == "bye":
                 break
 
-            await timed_comparison(prompt, action)
+            await timed_comparison(prompt, action, no_models)
         return
 
     if prompt == "input":
         prompt = sys.stdin.read()
 
-    await timed_comparison(prompt, action)
+    await timed_comparison(prompt, action, no_models)
 
 if __name__ == "__main__":
     asyncio.run(main())

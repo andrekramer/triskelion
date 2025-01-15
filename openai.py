@@ -11,10 +11,10 @@ class Openai(support.Model):
     model = "gpt-4o"
     text_field = "content"
 
-    @staticmethod
-    def make_query(text):
+    @classmethod
+    def make_query(cls, text):
         """make a query for openai model"""
-        return support.make_openai_std_query(text, Openai.model)
+        return support.make_openai_std_query(text, cls.model)
 
     @staticmethod
     async def ask(session, query):
@@ -25,7 +25,6 @@ class Openai(support.Model):
         }
         return await support.ask(URL, session, query, headers)
 
-# Example of a second model from a vendor
 class Openai2(Openai):
     """openai 4o mini"""
     name = "openai2"

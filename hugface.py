@@ -11,16 +11,17 @@ class HugFace(support.Model):
     model = "google/gemma-2-2b-it"
     text_field = "content"
 
-    @staticmethod
-    def make_query(text):
+    @classmethod
+    def make_query(cls, text):
         """make a query for hugging face"""
-        return support.make_openai_std_query(text, HugFace.model)
+        print("Hugging face model " + cls.model)
+        return support.make_openai_std_query(text, cls.model)
 
-    @staticmethod
-    async def ask(session, query):
+    @classmethod
+    async def ask(cls, session, query):
         """make a request to model hosted on hugging face"""
-        url = URL + "/" + HugFace.model + "/v1/chat/completions"
-        print(url)
+        url = URL + "/" + cls.model + "/v1/chat/completions"
+        print("query url " + url)
         headers = {
           "Content-Type": "application/json",
           "Authorization": "Bearer " + hugface_api_key
@@ -31,6 +32,11 @@ class HugFace2(HugFace):
     """Microsoft Phi mini 4k instruct"""
     name = "hugface2"
     model = "microsoft/Phi-3-mini-4k-instruct"
+
+class HugFaceTooLarge(HugFace):
+    """Microsoft Phi 4"""
+    name = "hugface2"
+    model = "microsoft/phi-4"
 
 class HugFace3(HugFace2):
     """Qwen Qwen 2.5"""

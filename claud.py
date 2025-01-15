@@ -11,10 +11,10 @@ class Claud(support.Model):
     model = "claude-3-5-sonnet-20241022"
     text_field = "text"
 
-    @staticmethod
-    def make_query(text):
+    @classmethod
+    def make_query(cls, text):
         """make claud query"""
-        obj = { "model": Claud.model, "max_tokens": 2048 }
+        obj = { "model": cls.model, "max_tokens": 2048 }
         return support.make_std_query_from_object(obj, text)
 
     @staticmethod

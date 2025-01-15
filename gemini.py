@@ -21,11 +21,12 @@ class Gemini(support.Model):
         obj["contents"] = contents
         return support.serialize(obj)
 
-    @staticmethod
-    async def ask(session, query):
+    @classmethod
+    async def ask(cls, session, query):
         """make a request using http post"""
         url = "https://generativelanguage.googleapis.com/v1beta/models/" + \
-              Gemini.model + ":generateContent?key=" + gemini_api_key
+              cls.model + ":generateContent?key=" + gemini_api_key
+        print("query url " + url)
         headers = {
             "Content-Type": "application/json"
         }

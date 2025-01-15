@@ -50,6 +50,16 @@ button {
 button:hover {
     background-color: #00cc00; /* slightly darker green on hover */
 }
+input[type="number"] {
+    background-color: black;
+    color: lime;
+    font-size: 24px; /* Increased font size */
+    padding: 10px; /* Padding for better spacing */
+    border: 2px solid lime;
+    border-radius: 5px; /* Optional: Rounded corners */
+    width: 100px; /* Set a fixed width for the input */
+    margin-bottom:10px;
+}
 ul {
     list-style-type: none;
     padding: 0;

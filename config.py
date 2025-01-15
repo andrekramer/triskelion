@@ -9,6 +9,7 @@ from openai import Openai, Openai2
 from grok import Grok, Grok2
 from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
+from deepseek import Deepseek
 from faulty import Faulty
 
 for file in ["gemini-api-key",
@@ -16,7 +17,8 @@ for file in ["gemini-api-key",
              "openai-api-key",
              "grok-api-key",
              "llama-api-key",
-             "hugface-api-key"]:
+             "hugface-api-key",
+             "deepseek-api-key"]:
     if not os.path.isfile(file):
         print("please add api keys")
         sys.exit(-1)
@@ -26,7 +28,7 @@ for file in ["gemini-api-key",
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
 models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2,
-          Llama, Llama2, HugFace, HugFace2, HugFace3, Faulty]
+          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Faulty]
 
 # new model? add here if to be used for comparisons
 # The models that can be used for comparisons (skipping any not in comparison schedule).
@@ -52,6 +54,7 @@ schedule = {
   "hugface": F,
   "hugface2": F,
   "hugface3": F,
+  "deepseek": F,
   "faulty": F
 }
 
@@ -64,6 +67,7 @@ comparison_schedule = {
   "grok2": F,
   "llama": T,
   "hugface": F,
+  "deepseek": F,
   "faulty": F
 }
 
@@ -81,12 +85,19 @@ model_versions = {
   "llama2": "llama3-8b",
   "hugface": "google/gemma-2-2b-it",
   "hugface2": "microsoft/Phi-3-mini-4k-instruct",
-  "hugface3": "Qwen/Qwen2.5-7B-Instruct"
+  "hugface3": "Qwen/Qwen2.5-7B-Instruct",
+  "deepseek": "deepseek-chat"
 }
 
 
 web_comparisons = ["1-way", "3-way", "3-twice", "n-way"]
 default_web_comparison = web_comparisons.index("3-way")
+
+web_critiques = ["critique", "summarize", "rank", "combine"]
+default_web_critique = web_critiques.index("critique")
+
+
+actors = ["Alice", "Bob", "Eve", "Jane", "John", "Mary", "Sam", "Sue", "Tom", "Zoe"]
 
 # new model? add here if you want the model version to be configrable
 def configure():
@@ -103,10 +114,13 @@ def configure():
     HugFace.model = model_versions["hugface"]
     HugFace2.model = model_versions["hugface2"]
     HugFace3.model = model_versions["hugface3"]
+    Deepseek.model = model_versions["deepseek"]
 
 DEBUG = False
 
 MAX_NO_MODELS = 5
+
+DEFAULT_NO_MODELS = 3
 
 class Config:
     """Configuration Helper"""
