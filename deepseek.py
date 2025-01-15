@@ -12,10 +12,10 @@ class Deepseek(support.Model):
 
     text_field = "content"
 
-    @staticmethod
-    def make_query(text):
+    @classmethod
+    def make_query(cls, text):
         """make a query for Deepseek"""
-        return support.make_openai_std_query(text, Deepseek.model)
+        return support.make_openai_std_query(text, cls.model)
 
     @staticmethod
     async def ask(session, query):
@@ -25,4 +25,3 @@ class Deepseek(support.Model):
           "Authorization": "Bearer " + deepseek_api_key
         }
         return await support.ask(URL, session, query, headers)
-

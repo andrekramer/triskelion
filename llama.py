@@ -12,10 +12,10 @@ class Llama(support.Model):
 
     text_field = "content"
 
-    @staticmethod
-    def make_query(text):
+    @classmethod
+    def make_query(cls, text):
         """make a query for LLama"""
-        return support.make_openai_std_query(text, Llama.model)
+        return support.make_openai_std_query(text, cls.model)
 
     @staticmethod
     async def ask(session, query):

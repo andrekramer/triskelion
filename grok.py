@@ -11,10 +11,10 @@ class Grok(support.Model):
     model = "grok-beta"
     text_field = "content"
 
-    @staticmethod
-    def make_query(text):
+    @classmethod
+    def make_query(cls, text):
         """make a query for Grok"""
-        return support.make_openai_std_query(text, Grok.model)
+        return support.make_openai_std_query(text, cls.model)
 
     @staticmethod
     async def ask(session, query):

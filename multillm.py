@@ -7,9 +7,10 @@ import asyncio
 import aiohttp
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import MAX_NO_MODELS, display, DEBUG, Config
+from config import MAX_NO_MODELS, display, DEBUG, actors, Config
 import support
-from comparison import make_comparison
+from comparison import make_comparison, make_critique, make_summary, make_ranking, \
+    add_full_stop, quote
 
 # Add current directory to import path when using this file as a module.
 # Say with "from <some-dir> import multillm".
@@ -106,6 +107,7 @@ def parse_responses(responses, trail, verbose=False):
         else:
             if verbose:
                 display(trail, "No response text found!")
+                print(json_formatted_str)
             response_texts.append("")
         i += 1
         if i == len(responses):
@@ -136,6 +138,29 @@ async def compare(session, model, comparison, trail, verbose = False):
         display(trail, f"comparison using {model.name} result:\n" + text)
 
     return text.find("YES") != -1 and text.find("NO") == -1
+
+async def query_critique(session, model, critque, trail, verbose = False):
+    """query for critique using given model"""
+  
+    query = model.make_query(clean(critque))
+    if DEBUG:
+        print(query)
+    response = await model.ask(session, query)
+    if response is None or response.strip() == "":
+        response = "{}"
+    json_data = json.loads(response)
+    if DEBUG:
+        json_formatted_str = json.dumps(json_data, indent=2)
+        print(json_formatted_str)
+    text = support.search_json(json_data, model.text_field)
+    if text is None:
+        if verbose:
+            display(trail, f"critique using {model.name} failed!")
+        return "FAIL"
+    if verbose:
+        display(trail, f"critique using {model.name} result:\n" + text)
+
+    return text
 
 def ensure_texts(texts, count, trail):
     """ensure there are enough responses to compare"""
@@ -651,18 +676,6 @@ async def compare_new_template(prompt, texts, trail, verbose=False):
     # return the compared text or None
     return None
 
-async def critique(prompt, texts, trail):
-    """critique the responses"""
-    return trail
-
-async def summarize(prompt, texts, trail):
-    """summarize the responses"""
-    return trail
-
-async def rank(prompt, texts, trail):
-    """rank the responses"""
-    return trail
-
 async def run_comparison(prompt, action):
     """run a comparison"""
     trail = []
@@ -715,6 +728,38 @@ async def __run_compare_action(action, prompt, texts, trail):
 
     return trail
 
+async def __critique(critique, trail, verbose=False):
+    if DEBUG:
+        print(critique)
+
+    model = get_comparison_model(0)
+    if verbose:
+        display(trail, "comparison model " + model.name)
+
+    async with get_session() as session:
+        critique = await query_critique(session, model, critique, trail, verbose=False)
+        if verbose:
+            display(trail, critique)
+        return critique
+
+async def critique(prompt, combined_texts, trail):
+    """critique the responses"""
+    critique = make_critique(prompt, combined_texts)
+    await __critique(critique, trail, verbose=True)
+    return trail
+
+async def summarize(prompt, combined_texts, trail):
+    """summarize the responses"""
+    critique = make_summary(prompt, combined_texts)
+    await __critique(critique, trail, verbose=True)
+    return trail
+
+async def rank(prompt, combined_texts, trail):
+    """rank the responses"""
+    critique = make_ranking(prompt, combined_texts)
+    await __critique(critique, trail, verbose=True)
+    return trail
+
 async def timed_comparison(prompt, action, no_models):
     """time a comparison"""
     start_time = time.time()
@@ -738,14 +783,25 @@ async def run_critique(prompt, action, no_models):
 
 async def __run_critque_action(action, prompt, texts, trail):
     """run a critique action"""
+
+    combined_texts = ""
+    i = 0
+    for text in texts:
+        name = actors[i]
+        actor_text = ("" if i == 0 else "\n") + str(i + 1) + ". " + name + " says:\n\n"
+        combined_texts +=  actor_text + quote(add_full_stop(text)) + "\n"
+        i += 1
+
+    display(trail, combined_texts)
+
     if action == "critique":
-        await critique(prompt, texts, trail)
+        await critique(prompt, combined_texts, trail)
 
     elif action == "summarize":
-        await summarize(prompt, texts, trail)
+        await summarize(prompt, combined_texts, trail)
 
     elif action == "rank":
-        await rank(prompt, texts, trail)
+        await rank(prompt, combined_texts, trail)
 
     else:
         display(trail, "FAIL")

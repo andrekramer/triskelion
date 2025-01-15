@@ -239,7 +239,7 @@ async def process_critique(prompt, selected_critique, no_models):
         result = await run_critique(prompt, selected_critique, no_models)
         return result
     except Exception as e:
-        return ["failed to run critique " + selected_critique, str(e)]
+        return ["failed to run " + selected_critique, str(e)]
 
 
 if __name__ == "__main__":
