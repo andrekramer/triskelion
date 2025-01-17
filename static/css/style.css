@@ -57,7 +57,7 @@ input[type="number"] {
     padding: 10px; /* Padding for better spacing */
     border: 2px solid lime;
     border-radius: 5px; /* Optional: Rounded corners */
-    width: 100px; /* Set a fixed width for the input */
+    width: 60px; /* Set a fixed width for the input */
     margin-bottom:10px;
 }
 ul {

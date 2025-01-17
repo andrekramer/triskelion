@@ -9,9 +9,9 @@
   <div class="container">
     <h1>Triskelion: AI Model Critic</h1>
     <form method="post">
-        <div>Query </div><input type="number" id="no_models" name="no_models" min="1" max="5" value="{{no_models}}" required><div>(one or more) AI models in parallel and critique responses.</div>
+        <div>Query (one or more)</div><input type="number" id="no_models" name="no_models" min="1" max="5" value="{{no_models}}" required><div>models in parallel and critique responses.</div>
         <div class="terminal-input-group">
-            <textarea name="text_input" rows="8" cols="60">{{ prompt }}</textarea>
+            <textarea name="text_prompt" rows="8" cols="60">{{ prompt }}</textarea>
             <div class="terminal-radio-group">
                 {% for item in critiques %}
                     {% set i = loop.index - 1 %}
@@ -21,21 +21,8 @@
         </div>
         <button type="submit" id="promptButton">Critique</button>
     </form>
-    <div style="margin-top: 10px;"></div><a href="/config">Configure</a></div>
-    <div style="margin-top: 10px;"></div><a href="/">Home</a></div>
-    <div style="margin-top: 10px;">
-        <a href="javascript:history.back()">Go Back</a>
-    </div>
-    {% if response %}
-        <h2 id="responseHeader">Response:</h2>
-        <ul id="responseList">
-        {% for line in response %}
-            <li>
-                <pre style="white-space: pre-wrap;">{{ line }}</pre>
-            </li>
-        {% endfor %}
-        </ul>
-    {% endif %}
+    {% include 'response.html' %}
+    {% include 'links.html' %}
   </div>
  
   <script src="static/js/script.js"></script>
