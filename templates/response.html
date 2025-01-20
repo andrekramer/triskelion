@@ -1,0 +1,10 @@
+{% if response %}
+<h2 id="responseHeader">Responses:</h2>
+<ul id="responseList">
+{% for line in response %}
+    <li>
+        <pre style="white-space: pre-wrap;">{{ line }}</pre>
+    </li>
+{% endfor %}
+</ul>
+{% endif %}
