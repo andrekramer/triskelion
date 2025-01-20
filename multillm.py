@@ -10,7 +10,7 @@ from config import models, schedule, comparison_models, comparison_schedule, con
 from config import MAX_NO_MODELS, display, DEBUG, actors, Config
 import support
 from comparison import make_comparison, \
-    make_critique, make_summary, make_ranking, make_combiner, \
+    make_critique, make_summary, make_ranking, make_combiner, make_exam, \
     add_full_stop, quote
 
 # Add current directory to import path when using this file as a module.
@@ -767,14 +767,24 @@ async def combine(prompt, combined_texts, trail):
     await __critique(query, trail, verbose=True)
     return trail
 
-async def timed_comparison(prompt, action, no_models):
+async def examine(prompt, exam, combined_texts, trail):
+    """examine the responses"""
+    query = make_exam(prompt, exam, combined_texts)
+
+    display(trail, query)
+    await __critique(query, trail, verbose=True)
+    return trail
+
+async def timed_comparison(prompt, action, no_models, exam):
     """time a comparison"""
     start_time = time.time()
 
     if no_models == -1:
         await run_comparison(prompt, action)
-    else:
+    elif exam is None:
         await run_critique(prompt, action, no_models)
+    else:
+        await run_examine(prompt, exam, no_models)
 
     end_time = time.time()
     print(f"Time taken: {end_time - start_time:.2f} seconds")
@@ -788,16 +798,20 @@ async def run_critique(prompt, action, no_models):
     texts = parse_responses(responses, trail, True)
     return await __run_critque_action(action, prompt, texts, trail)
 
-async def __run_critque_action(action, prompt, texts, trail):
-    """run a critique action"""
-
+def __combine_texts(texts):
     combined_texts = ""
     i = 0
     for text in texts:
         name = actors[i]
         actor_text = ("" if i == 0 else "\n") + str(i + 1) + ". " + name + " says:\n\n"
-        combined_texts +=  actor_text + quote(add_full_stop(text)) + "\n"
+        combined_texts += actor_text + quote(add_full_stop(text)) + "\n"
         i += 1
+    return combined_texts
+
+async def __run_critque_action(action, prompt, texts, trail):
+    """run a critique action"""
+
+    combined_texts = __combine_texts(texts)
 
     display(trail, combined_texts)
 
@@ -820,6 +834,30 @@ async def __run_critque_action(action, prompt, texts, trail):
 
     return trail
 
+async def run_examine(prompt, exam, no_models):
+    """run an examination over no_models models"""
+    trail = []
+
+    responses = await multi_way_query(prompt, no_models)
+
+    texts = parse_responses(responses, trail, True)
+    return await __run_examine(prompt, exam, texts, trail)
+
+async def __run_examine(prompt, exam, texts, trail):
+    """run an examin action"""
+
+    combined_texts = __combine_texts(texts)
+
+    if len(exam.strip()) == 0:
+        display(trail, combined_texts)
+        display(trail, "No examination requested")
+        return trail
+
+    await examine(prompt, exam, combined_texts, trail)
+
+    return trail
+
+
 async def main():
     """multi llm main - parse args and run a comparison"""
     Config.set_trail_only(False)
@@ -827,16 +865,21 @@ async def main():
     action = "unkown"
     prompt = ""
     no_models = -1
+    exam = None
+
     if len(sys.argv) > 2:
         action = sys.argv[1]
         prompt = clean(sys.argv[2])
 
-    if len(sys.argv) == 4:
+    if len(sys.argv) > 3:
         no_models = int(sys.argv[3])
         if no_models < 1 or no_models > MAX_NO_MODELS:
             print("Number of models when specified must be > 1 and <= 5")
             sys.exit()
-    elif len(sys.argv) != 3:
+
+    if len(sys.argv) == 5 and action == "examine":
+        exam = sys.argv[4]
+    elif len(sys.argv) != 3 and len(sys.argv) != 4:
         print(
            # new comarison - add here
     """Usage: python3 multillm.py 3-way|2-way|1-way|none|2-1|3-all|n-way prompt
@@ -863,6 +906,12 @@ async def main():
                  and perform a critique.
                  number_of_models should be a number between 1 and 5 inclusive.
                  xyz (the type of critique) can be "critique", "summarize", "rank" or "combine"
+
+              python3 multillm.py examine prompt number_of_models exam
+              -- use given text as a prompt for the number of models specified
+                    and perform an examination.
+                    number_of_models should be a number between 1 and 5 inclusive.
+                    exam is the examination to be performed
               """)
         sys.exit()
 
@@ -877,13 +926,13 @@ async def main():
             if p == "bye":
                 break
 
-            await timed_comparison(prompt, action, no_models)
+            await timed_comparison(prompt, action, no_models, exam)
         return
 
     if prompt == "input":
         prompt = sys.stdin.read()
 
-    await timed_comparison(prompt, action, no_models)
+    await timed_comparison(prompt, action, no_models, exam)
 
 if __name__ == "__main__":
     asyncio.run(main())

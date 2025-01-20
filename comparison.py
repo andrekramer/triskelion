@@ -99,3 +99,12 @@ def make_combiner(query, statements):
     else:
         combiner = "Combine the following statements into a concensus opinion.\n\n"
     return combiner + statements
+
+def make_exam(query, exam, statements):
+    """make an examine prompt"""
+    if Config.include_query:
+        examine = "The following are answers to this query:\n\n" + \
+            quote(query) + "\n\n"
+    else:
+        examine = "The following are different statements made.\n\n"
+    return examine + statements + "\n\n" + exam

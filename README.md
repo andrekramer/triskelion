@@ -49,11 +49,19 @@ python3 multillm.py xyz input
 python3 multillm.py xyz interactive     
 --- start an interactive loop to read prompts. You can end this using Crtl-C or by typing "bye".    
 
-python3 multillm.py xyz prompt number_of_models 
--- use given text as a prompt for the number of models specified and perform a critique.
-   number_of_models should be a number between 1 and 5 inclusive.
-   xyz (the type of critique) can be "critique", "summarize", "rank" or "combine"
-## Run as a Web app:  
+python3 multillm.py xyz prompt number_of_models    
+-- use given text as a prompt for the number of models specified and perform a critique.   
+   number_of_models should be a number between 1 and 5 inclusive.   
+   xyz (the type of critique) can be "critique", "summarize", "rank" or "combine"   
+
+python3 multillm.py examine prompt number_of_models exam    
+-- use given text as a prompt for the number of models specified    
+   and perform an examination.    
+   number_of_models should be a number between 1 and 5 inclusive.    
+   exam is the examination to be performed    
+
+
+## Run as a Web app:     
 
 Install Flash with the steps in py-install file.  
 
