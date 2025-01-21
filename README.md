@@ -6,8 +6,9 @@
 
 Please see   
 https://andrekramermsc.substack.com/p/triskelion-an-ai-model-comparator   
-and   
 https://andrekramermsc.substack.com/p/n-versioning-ai-llm-models   
+and   
+https://open.substack.com/pub/andrekramermsc/p/exploring-multiple-models-with-triskelion   
 
 Query multiple LLMs and compare results to help suppress model errors.   
 The models to use and comparison action are configurable (see config.py, comparison.py).   

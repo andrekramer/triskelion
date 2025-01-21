@@ -10,6 +10,7 @@ from grok import Grok, Grok2
 from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
 from deepseek import Deepseek
+from localhost import LocalHost
 from faulty import Faulty
 
 for file in ["gemini-api-key",
@@ -28,13 +29,15 @@ for file in ["gemini-api-key",
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
 models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2,
-          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Faulty]
+          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek,
+          LocalHost, Faulty]
 
 # new model? add here if to be used for comparisons
 # The models that can be used for comparisons (skipping any not in comparison schedule).
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons.
 # Can add a model more than once but that can't be configured via the Web UI.
-comparison_models = [Openai, Gemini, Claud, Grok2, Llama, Faulty]
+comparison_models = [Openai, Gemini, Claud, Grok2, Llama, Deepseek,
+                     LocalHost, Faulty]
 
 T = True
 F = False
@@ -55,6 +58,7 @@ schedule = {
   "hugface2": F,
   "hugface3": F,
   "deepseek": F,
+  "localhost": F,
   "faulty": F
 }
 
@@ -68,6 +72,7 @@ comparison_schedule = {
   "llama": T,
   "hugface": F,
   "deepseek": F,
+  "localhost": F,
   "faulty": F
 }
 
