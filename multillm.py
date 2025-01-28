@@ -746,9 +746,15 @@ async def run_test(prompt, test):
             text = support.search_json(json_data, TestModel.text_field)
             if text is not None and text.strip() != "":
                 display(trail, text)
+
+                test_query_response(prompt, text, trail)
             else:
                 display(trail, "No response text found! " + response)
     return trail
+
+def test_query_response(prompt, response, trail):
+    """test the prompt response"""
+    display(trail, "Unsafe as not proven safe")
 
 async def __critique(query, trail, verbose=False):
     if DEBUG:
