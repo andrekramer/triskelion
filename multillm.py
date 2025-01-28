@@ -807,7 +807,10 @@ async def timed_comparison(prompt, action, no_models, exam):
     start_time = time.time()
 
     if no_models == -1:
-        await run_comparison(prompt, action)
+        if action == "test":
+            await run_test(prompt, action)
+        else:
+            await run_comparison(prompt, action)
     elif exam is None:
         await run_critique(prompt, action, no_models)
     else:
@@ -939,6 +942,9 @@ async def main():
                     and perform an examination.
                     number_of_models should be a number between 1 and 5 inclusive.
                     exam is the examination to be performed
+
+              python3 multillm.py test prompt
+              -- use given prompt as input text for the test model
               """)
         sys.exit()
 
