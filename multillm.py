@@ -731,7 +731,7 @@ async def __run_compare_action(action, prompt, texts, trail):
 
 async def run_test(prompt, test):
     """run a test"""
-    trail = []
+    trail = ["A model response is unsafe unless proven safe."]
 
     if test == "test":
         async with get_session() as session:
@@ -747,7 +747,7 @@ async def run_test(prompt, test):
             if text is not None and text.strip() != "":
                 display(trail, text)
             else:
-                display(trail, "No response text found!")
+                display(trail, "No response text found! " + response)
     return trail
 
 async def __critique(query, trail, verbose=False):
