@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import MAX_NO_MODELS, display, DEBUG, actors, Config
+from config import MAX_NO_MODELS, display, DEBUG, actors, Config, TestModel
 import support
 from comparison import make_comparison, \
     make_critique, make_summary, make_ranking, make_combiner, make_exam, \
@@ -727,6 +727,27 @@ async def __run_compare_action(action, prompt, texts, trail):
         display(trail, "FAIL comparison")
         display(trail, "")
 
+    return trail
+
+async def run_test(prompt, test):
+    """run a test"""
+    trail = ["A model response is unsafe unless proven safe."]
+
+    if test == "test":
+        async with get_session() as session:
+            response = await TestModel.ask(session, TestModel.make_query(prompt))
+
+            json_data = json.loads(response) if response is not None and response != "" else {}
+
+            if DEBUG:
+                json_formatted_str = json.dumps(json_data, indent=2)
+                print(json_formatted_str)
+
+            text = support.search_json(json_data, TestModel.text_field)
+            if text is not None and text.strip() != "":
+                display(trail, text)
+            else:
+                display(trail, "No response text found! " + response)
     return trail
 
 async def __critique(query, trail, verbose=False):

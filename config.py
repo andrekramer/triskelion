@@ -39,6 +39,8 @@ models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2,
 comparison_models = [Openai, Gemini, Claud, Grok2, Llama, Deepseek,
                      LocalHost, Faulty]
 
+TestModel = LocalHost
+
 T = True
 F = False
 
@@ -101,6 +103,8 @@ default_web_comparison = web_comparisons.index("3-way")
 web_critiques = ["critique", "summarize", "rank", "combine"]
 default_web_critique = web_critiques.index("critique")
 
+web_tests = ["test" ]
+default_web_test = web_tests.index("test")
 
 actors = ["Alice", "Bob", "Eve", "Jane", "John", "Mary", "Sam", "Sue", "Tom", "Zoe"]
 
@@ -130,7 +134,7 @@ DEFAULT_NO_MODELS = 3
 class Config:
     """Configuration Helper"""
     # timeout on model querries in seconds - set high for thinking models
-    client_timeout_seconds = 30
+    client_timeout_seconds = 60
     # only write to the trail if true else also write to console
     trail_only = True
     # use another model for comparison than those used for queries if true

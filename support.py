@@ -63,10 +63,12 @@ async def ask(url, session, query, headers):
         async with session.post(url, data=query.encode(), headers=headers) as response:
             print(f"Fetched {url}: Status code {response.status}")
             if response.status != 200:
+                print(f"Error while fetching {url}: {response.status}")
                 return "{\"error\": " + str(response.status) + "}"
             return await response.text()
     except Exception as e:
-        return "{ \"error\": \"" + e.__class__.__name__ + "\"}"
+        print(f"An error occurred while fetching {url}: {e.__class__.__name__}")
+        return "{ \"error\": \"" + e.__class__.__name__ + "\" }"
 
 def search_json(json_data, target_key):
     """Recursively searches a JSON object for a key."""
