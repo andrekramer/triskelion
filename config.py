@@ -5,7 +5,7 @@ import os
 # new model? import here
 from gemini import Gemini, Gemini2
 from claud import  Claud
-from openai import Openai, Openai2
+from openai import Openai, Openai2, Openai3
 from grok import Grok, Grok2
 from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
@@ -21,14 +21,14 @@ for file in ["gemini-api-key",
              "hugface-api-key",
              "deepseek-api-key"]:
     if not os.path.isfile(file):
-        print("please add api keys")
+        print("please add api keys file " + file)
         sys.exit(-1)
 
 # new model? add here
 # The models and order of responses (skiping any not in schedule).
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
-models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2,
+models = [Gemini, Gemini2, Claud, Openai, Openai2, Openai3, Grok, Grok2,
           Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek,
           LocalHost, Faulty]
 
@@ -36,10 +36,10 @@ models = [Gemini, Gemini2, Claud, Openai, Openai2, Grok, Grok2,
 # The models that can be used for comparisons (skipping any not in comparison schedule).
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons.
 # Can add a model more than once but that can't be configured via the Web UI.
-comparison_models = [Openai, Gemini, Claud, Grok2, Llama, Deepseek,
+comparison_models = [Openai, Openai2, Gemini, Claud, Grok2, Llama, Deepseek,
                      LocalHost, Faulty]
 
-TestModel = LocalHost
+TestModel = Openai2  #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
@@ -51,6 +51,7 @@ schedule = {
   "gemini2": F,
   "openai": T,
   "openai2": F,
+  "openai3": F,
   "claud": T,
   "grok": F,
   "grok2": F,
@@ -69,6 +70,7 @@ schedule = {
 comparison_schedule = {
   "gemini": T,
   "openai": T,
+  "openai2": F,
   "claud": T,
   "grok2": F,
   "llama": T,
@@ -85,7 +87,8 @@ model_versions = {
   "gemini2": "gemini-2.0-flash-exp",
   "claud": "claude-3-5-sonnet-20241022",
   "openai": "gpt-4o",
-  "openai2": "chatgpt-4o-latest",
+  "openai2": "o1-mini",
+  "openai3": "o3-mini",
   "grok": "grok-beta",
   "grok2": "grok-2-latest",
   "llama": "llama3.3-70b",
@@ -116,6 +119,7 @@ def configure():
     Claud.model = model_versions["claud"]
     Openai.model = model_versions["openai"]
     Openai2.model = model_versions["openai2"]
+    Openai3.model = model_versions["openai3"]
     Grok.model = model_versions["grok"]
     Grok2.model = model_versions["grok2"]
     Llama.model = model_versions["llama"]
@@ -124,6 +128,7 @@ def configure():
     HugFace2.model = model_versions["hugface2"]
     HugFace3.model = model_versions["hugface3"]
     Deepseek.model = model_versions["deepseek"]
+    
 
 DEBUG = False
 

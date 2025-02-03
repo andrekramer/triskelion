@@ -760,7 +760,7 @@ async def __critique(query, trail, verbose=False):
     if DEBUG:
         print(query)
 
-    model = get_comparison_model(0)
+    model = get_comparison_model(0) # use the first enabled comparison model!
     if verbose:
         display(trail, "critique model " + model.name)
 

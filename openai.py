@@ -23,9 +23,15 @@ class Openai(support.Model):
           "Content-Type": "application/json",
           "Authorization": "Bearer " + openai_api_key
         }
+        # print(f"openai ask: {query}")
         return await support.ask(URL, session, query, headers)
 
 class Openai2(Openai):
-    """openai 4o mini"""
+    """openai o1 mini"""
     name = "openai2"
-    model = "gpt-4o-mini"
+    model = "o1-mini"
+
+class Openai3(Openai):
+    """openai o3 mini"""
+    name = "openai3"
+    model = "o3-mini"
