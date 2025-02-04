@@ -32,3 +32,4 @@ class Deepseek2(Deepseek):
     """Deepseek Reasoner"""
     name = "deepseek2"
     model = "deepseek-reasoner"
+    reasoning_text_field = "reasoning_content"

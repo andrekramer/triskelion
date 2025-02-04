@@ -739,9 +739,15 @@ async def run_test(prompt, test):
 
             json_data = json.loads(response) if response is not None and response != "" else {}
 
-            if DEBUG:
+            if True:
                 json_formatted_str = json.dumps(json_data, indent=2)
                 print(json_formatted_str)
+
+            reasoning_text = getattr(TestModel, "reasoning_text_field", None)
+            if reasoning_text is not None:
+                reasoning = support.search_json(json_data, reasoning_text)
+                if reasoning is not None and reasoning.strip() != "":
+                    display(trail, "<think>" + reasoning + "</think>")
 
             text = support.search_json(json_data, TestModel.text_field)
             if text is not None and text.strip() != "":

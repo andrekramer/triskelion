@@ -40,7 +40,7 @@ comparison_models = [Openai, Openai2, Gemini, Claud, Grok2,
                      Llama, Deepseek, Deepseek2,
                      LocalHost, Faulty]
 
-TestModel = LocalHost #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
+TestModel = Openai2 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
