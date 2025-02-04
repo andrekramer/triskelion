@@ -25,7 +25,7 @@
                 <label class="checkbox-label">
                   <input type="checkbox" name="selected_options" value="{{ option.id }}"
                           {% if option.id in selected_options %}checked{% endif %}>
-                          {{ option.name }}
+                          {{ option.name }} <div style="display: inline-block; color: white;">{{ option.version }}</div>
                 </label>
             {% endfor %}
         </div>

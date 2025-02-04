@@ -24,4 +24,11 @@ class Deepseek(support.Model):
           "Content-Type": "application/json",
           "Authorization": "Bearer " + deepseek_api_key
         }
+        # print(f"deepseek ask: {query}")
         return await support.ask(URL, session, query, headers)
+
+
+class Deepseek2(Deepseek):
+    """Deepseek Reasoner"""
+    name = "deepseek2"
+    model = "deepseek-reasoner"

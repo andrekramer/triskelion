@@ -9,7 +9,7 @@ from openai import Openai, Openai2, Openai3
 from grok import Grok, Grok2
 from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
-from deepseek import Deepseek
+from deepseek import Deepseek, Deepseek2
 from localhost import LocalHost
 from faulty import Faulty
 
@@ -29,17 +29,18 @@ for file in ["gemini-api-key",
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
 models = [Gemini, Gemini2, Claud, Openai, Openai2, Openai3, Grok, Grok2,
-          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek,
+          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Deepseek2,
           LocalHost, Faulty]
 
 # new model? add here if to be used for comparisons
 # The models that can be used for comparisons (skipping any not in comparison schedule).
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons.
 # Can add a model more than once but that can't be configured via the Web UI.
-comparison_models = [Openai, Openai2, Gemini, Claud, Grok2, Llama, Deepseek,
+comparison_models = [Openai, Openai2, Gemini, Claud, Grok2,
+                     Llama, Deepseek, Deepseek2,
                      LocalHost, Faulty]
 
-TestModel = Openai2  #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
+TestModel = LocalHost #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
@@ -61,6 +62,7 @@ schedule = {
   "hugface2": F,
   "hugface3": F,
   "deepseek": F,
+  "deepseek2": F,
   "localhost": F,
   "faulty": F
 }
@@ -76,6 +78,7 @@ comparison_schedule = {
   "llama": T,
   "hugface": F,
   "deepseek": F,
+  "deepseek2": F,
   "localhost": F,
   "faulty": F
 }
@@ -96,7 +99,8 @@ model_versions = {
   "hugface": "google/gemma-2-2b-it",
   "hugface2": "microsoft/Phi-3-mini-4k-instruct",
   "hugface3": "Qwen/Qwen2.5-7B-Instruct",
-  "deepseek": "deepseek-chat"
+  "deepseek": "deepseek-chat",
+  "deepseek2": "deepseek-reasoner",
 }
 
 
@@ -128,7 +132,7 @@ def configure():
     HugFace2.model = model_versions["hugface2"]
     HugFace3.model = model_versions["hugface3"]
     Deepseek.model = model_versions["deepseek"]
-    
+    Deepseek2.model = model_versions["deepseek2"]
 
 DEBUG = False
 
@@ -139,7 +143,7 @@ DEFAULT_NO_MODELS = 3
 class Config:
     """Configuration Helper"""
     # timeout on model querries in seconds - set high for thinking models
-    client_timeout_seconds = 60
+    client_timeout_seconds = 60 * 2
     # only write to the trail if true else also write to console
     trail_only = True
     # use another model for comparison than those used for queries if true

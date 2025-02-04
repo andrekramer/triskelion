@@ -201,7 +201,8 @@ def get_features():
             selected_options.append("model-" + model.name)
         options.append({
            "name": model.name,
-           "id": "model-" + model.name
+           "id": "model-" + model.name,
+           "version": model.model
         })
     feature_sets["set_models"]["options"] = options
 
@@ -213,7 +214,8 @@ def get_features():
             selected_options.append("comparison-model-" + model.name)
         options.append({
            "name": model.name,
-           "id": "comparison-model-" + model.name
+           "id": "comparison-model-" + model.name,
+           "version": model.model
         })
     feature_sets["set_comparison_models"]["options"] = options
 
