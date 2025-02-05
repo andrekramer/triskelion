@@ -22,9 +22,12 @@ You need 3 models configured to be able to mask one error (e.g. using 3-way comp
 Hint: You can use 3 models from HuggingFace by editing the config and adding just one (free) api key   
 and set the other api keys to dummy values.
 
-Free to use. USE AT YOUR OWN RISK!
+Free to use. USE AT YOUR OWN RISK!   
 
 ## Usage:   
+
+Don't foreget to "source venv/bin/activate" in new shells to activate the Python env.   
+
 python3 multillm.py 3-way|2-way|1-way|2-1|3-all|none|n-way prompt   
 
 e.g.   
