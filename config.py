@@ -3,7 +3,7 @@ import sys
 import os
 
 # new model? import here
-from gemini import Gemini, Gemini2
+from gemini import Gemini, Gemini2, Gemini3
 from claud import  Claud
 from openai import Openai, Openai2, Openai3
 from grok import Grok, Grok2
@@ -28,7 +28,7 @@ for file in ["gemini-api-key",
 # The models and order of responses (skiping any not in schedule).
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
-models = [Gemini, Gemini2, Claud, Openai, Openai2, Openai3, Grok, Grok2,
+models = [Gemini, Gemini2, Gemini3, Claud, Openai, Openai2, Openai3, Grok, Grok2,
           Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Deepseek2,
           LocalHost, Faulty]
 
@@ -36,11 +36,11 @@ models = [Gemini, Gemini2, Claud, Openai, Openai2, Openai3, Grok, Grok2,
 # The models that can be used for comparisons (skipping any not in comparison schedule).
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons.
 # Can add a model more than once but that can't be configured via the Web UI.
-comparison_models = [Openai, Openai2, Gemini, Claud, Grok2,
+comparison_models = [Openai, Openai2, Gemini, Gemini3, Claud, Grok2,
                      Llama, Deepseek, Deepseek2,
                      LocalHost, Faulty]
 
-TestModel = Openai2 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
+TestModel =  Gemini3 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
@@ -48,8 +48,9 @@ F = False
 # new model? add here
 # Which models to query
 schedule = {
-  "gemini": T,
-  "gemini2": F,
+  "gemini": F,
+  "gemini2": T,
+  "gemini3": F,
   "openai": T,
   "openai2": F,
   "openai3": F,
@@ -71,6 +72,7 @@ schedule = {
 # Which models to use for comparisons
 comparison_schedule = {
   "gemini": T,
+  "gemini3": F,
   "openai": T,
   "openai2": F,
   "claud": T,
@@ -88,6 +90,7 @@ comparison_schedule = {
 model_versions = {
   "gemini": "gemini-1.5-flash-latest",
   "gemini2": "gemini-2.0-flash-exp",
+  "gemini3": "gemini-2.0-pro-exp-02-05",
   "claud": "claude-3-5-sonnet-20241022",
   "openai": "gpt-4o",
   "openai2": "o1-mini",

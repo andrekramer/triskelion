@@ -32,8 +32,12 @@ class Gemini(support.Model):
         }
         return await support.ask(url, session, query, headers)
 
-
 class Gemini2(Gemini):
     """Meta Gemini 2.0 flash experimental"""
     name = "gemini2"
     model = "gemini-2.0-flash-exp"
+
+class Gemini3(Gemini):
+    """Meta Gemini 2.0 pro experimental"""
+    name = "gemini3"
+    model = "gemini-2.0-pro-exp-02-05"
