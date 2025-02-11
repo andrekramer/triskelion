@@ -12,6 +12,7 @@ from hugface import HugFace, HugFace2, HugFace3
 from deepseek import Deepseek, Deepseek2
 from localhost import LocalHost
 from faulty import Faulty
+from mistral import Mistral
 
 for file in ["gemini-api-key",
              "claud-api-key",
@@ -19,7 +20,8 @@ for file in ["gemini-api-key",
              "grok-api-key",
              "llama-api-key",
              "hugface-api-key",
-             "deepseek-api-key"]:
+             "deepseek-api-key",
+             "mistral-api-key"]:
     if not os.path.isfile(file):
         print("please add api keys file " + file)
         sys.exit(-1)
@@ -29,7 +31,7 @@ for file in ["gemini-api-key",
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
 models = [Gemini, Gemini2, Gemini3, Claud, Openai, Openai2, Openai3, Grok, Grok2,
-          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Deepseek2,
+          Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Deepseek2, Mistral,
           LocalHost, Faulty]
 
 # new model? add here if to be used for comparisons
@@ -37,7 +39,7 @@ models = [Gemini, Gemini2, Gemini3, Claud, Openai, Openai2, Openai3, Grok, Grok2
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons.
 # Can add a model more than once but that can't be configured via the Web UI.
 comparison_models = [Openai, Openai2, Gemini, Gemini3, Claud, Grok2,
-                     Llama, Deepseek, Deepseek2,
+                     Llama, Deepseek, Deepseek2, Mistral,
                      LocalHost, Faulty]
 
 TestModel =  Gemini3 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
@@ -64,6 +66,7 @@ schedule = {
   "hugface3": F,
   "deepseek": F,
   "deepseek2": F,
+  "mistral": F,
   "localhost": F,
   "faulty": F
 }
@@ -77,10 +80,11 @@ comparison_schedule = {
   "openai2": F,
   "claud": T,
   "grok2": F,
-  "llama": T,
+  "llama": F,
   "hugface": F,
   "deepseek": F,
   "deepseek2": F,
+  "mistral": F,
   "localhost": F,
   "faulty": F
 }
@@ -104,6 +108,7 @@ model_versions = {
   "hugface3": "Qwen/Qwen2.5-7B-Instruct",
   "deepseek": "deepseek-chat",
   "deepseek2": "deepseek-reasoner",
+  "mistral": "mistral-large-latest"
 }
 
 
@@ -113,8 +118,9 @@ default_web_comparison = web_comparisons.index("3-way")
 web_critiques = ["critique", "summarize", "rank", "combine"]
 default_web_critique = web_critiques.index("critique")
 
-web_tests = ["test" ]
-default_web_test = web_tests.index("test")
+web_tests = ["test-1", "test-2", "test-3", "test-4"]
+
+default_web_test = web_tests.index("test-1")
 
 actors = ["Alice", "Bob", "Eve", "Jane", "John", "Mary", "Sam", "Sue", "Tom", "Zoe"]
 
@@ -136,6 +142,7 @@ def configure():
     HugFace3.model = model_versions["hugface3"]
     Deepseek.model = model_versions["deepseek"]
     Deepseek2.model = model_versions["deepseek2"]
+    Mistral.model = model_versions["mistral"]
 
 DEBUG = False
 
@@ -210,3 +217,37 @@ def display(trail, text):
     if not Config.trail_only:
         print(text)
     trail.append(text)
+
+def get_model(i):
+    """get ith model"""
+    for model in models:
+        if not schedule[model.name]:
+            continue
+        if i == 0:
+            return model
+        i -= 1
+    raise RuntimeError("not enough models")
+
+def get_comparison_model(i):
+    """get ith comparison model"""
+    for cm in comparison_models:
+        if not comparison_schedule[cm.name]:
+            continue
+        if i == 0:
+            return cm
+        i -= 1
+    return get_comparison_model(i)
+
+def get_diff_comparison_model(model1, model2, model3 = None):
+    """get a different comparison model from two models passed as args"""
+    comparison_model = None
+    for cm in comparison_models:
+        if not comparison_schedule[cm.name]:
+            continue
+        if cm.name not in (model1.name, model2.name, "" if model3 is None else model3.name):
+            comparison_model = cm
+            break
+
+    if comparison_model is None:
+        raise RuntimeError("Couldn't find a different comparison model to use for comparison")
+    return comparison_model

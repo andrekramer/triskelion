@@ -64,8 +64,8 @@ python3 multillm.py examine prompt number_of_models exam
    number_of_models should be a number between 1 and 5 inclusive.    
    exam is the examination to be performed    
     
-python3 multillm.py test prompt   
--- use given prompt as input text for the test model    
+python3 multillm.py test-X prompt   
+-- use given prompt as input text for the test using comparison models
 
 ## Run as a Web app:     
 

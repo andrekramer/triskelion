@@ -3,15 +3,19 @@ import sys
 import time
 import json
 from pathlib import Path
+from types import SimpleNamespace
 import asyncio
 import aiohttp
 
 from config import models, schedule, comparison_models, comparison_schedule, configure
-from config import MAX_NO_MODELS, display, DEBUG, actors, Config, TestModel
+from config import MAX_NO_MODELS, display, DEBUG, Config, TestModel
+from config import get_model, get_comparison_model, get_diff_comparison_model
+
+from model_tests import test_query_response
+from model_critique import run_critique, run_examine
+
 import support
-from comparison import make_comparison, \
-    make_critique, make_summary, make_ranking, make_combiner, make_exam, \
-    add_full_stop, quote
+from comparison import make_comparison
 
 # Add current directory to import path when using this file as a module.
 # Say with "from <some-dir> import multillm".
@@ -23,40 +27,6 @@ def get_session():
     """get http async session with configured timeout"""
     return aiohttp.ClientSession(timeout=timeout)
 
-def get_model(i):
-    """get ith model"""
-    for model in models:
-        if not schedule[model.name]:
-            continue
-        if i == 0:
-            return model
-        i -= 1
-    raise RuntimeError("not enough models")
-
-def get_comparison_model(i):
-    """get ith comparison model"""
-    for cm in comparison_models:
-        if not comparison_schedule[cm.name]:
-            continue
-        if i == 0:
-            return cm
-        i -= 1
-    return get_comparison_model(i)
-
-def get_diff_comparison_model(model1, model2, model3 = None):
-    """get a different comparison model from two models passed as args"""
-    comparison_model = None
-    for cm in comparison_models:
-        if not comparison_schedule[cm.name]:
-            continue
-        if cm.name not in (model1.name, model2.name, "" if model3 is None else model3.name):
-            comparison_model = cm
-            break
-
-    if comparison_model is None:
-        raise RuntimeError("Couldn't find a different comparison model to use for comparison")
-    return comparison_model
-
 async def multi_way_query(prompt, max_models = MAX_NO_MODELS):
     """Query the configured models in parallel and gather the responses"""
     promises = []
@@ -65,6 +35,24 @@ async def multi_way_query(prompt, max_models = MAX_NO_MODELS):
         i = 0
         for model in models:
             if schedule[model.name]:
+                promise = model.ask(session, model.make_query(prompt))
+                promises.append(promise)
+                i += 1
+                if i == max_models:
+                    break
+
+        responses = await asyncio.gather(*promises)
+
+    return responses
+
+async def multi_way_comparison(prompt, max_models = MAX_NO_MODELS):
+    """Query the configured comparison models in parallel and gather the responses"""
+    promises = []
+    async with get_session() as session:
+
+        i = 0
+        for model in comparison_models:
+            if comparison_schedule[model.name]:
                 promise = model.ask(session, model.make_query(prompt))
                 promises.append(promise)
                 i += 1
@@ -93,27 +81,50 @@ def parse_responses(responses, trail, verbose=False):
         if verbose:
             display(trail, "model " + model.name)
         response = responses[i]
-        if response is None or response == "":
-            response = "{}"
-
-        json_data = json.loads(response)
-        json_formatted_str = json.dumps(json_data, indent=2)
-        if DEBUG:
-            print(json_formatted_str)
-        text = support.search_json(json_data, model.text_field)
-        if text is not None and text.strip() != "":
-            if verbose:
-                display(trail, text)
-            response_texts.append(text)
-        else:
-            if verbose:
-                display(trail, "No response text found!")
-                print(json_formatted_str)
-            response_texts.append("")
+        parse_response(trail, verbose, response_texts, model, response)
         i += 1
         if i == len(responses):
             break
     return response_texts
+
+def parse_comparison_responses(responses, trail, verbose=False):
+    """Parsing out the comparison model specific text field. 
+       Display responses if display flag is True"""
+    response_texts = []
+    i = 0
+    for model in comparison_models:
+        if not comparison_schedule[model.name]:
+            if DEBUG:
+                display(trail, "skiped " + model.name)
+            continue
+        if verbose:
+            display(trail, "comparison model " + model.name)
+        response = responses[i]
+        parse_response(trail, verbose, response_texts, model, response)
+        i += 1
+        if i == len(responses):
+            break
+    return response_texts
+
+def parse_response(trail, verbose, response_texts, model, response):
+    """parse the response"""
+    if response is None or response == "":
+        response = "{}"
+
+    json_data = json.loads(response)
+    json_formatted_str = json.dumps(json_data, indent=2)
+    if DEBUG:
+        print(json_formatted_str)
+    text = support.search_json(json_data, model.text_field)
+    if text is not None and text.strip() != "":
+        if verbose:
+            display(trail, text)
+        response_texts.append(text)
+    else:
+        if verbose:
+            display(trail, "No response text found!")
+            print(json_formatted_str)
+        response_texts.append("")
 
 async def compare(session, model, comparison, trail, verbose = False):
     """compare using given model"""
@@ -426,7 +437,6 @@ async def compare_two_first(prompt, texts, trail, verbose=False):
     display(trail, "none agree")
     return None
 
-
 async def compare_twice_three_way(prompt, texts, trail, verbose = False):
     """Compare the first 3 result twice. Return None if no matches"""
     if ensure_texts(texts, 3, trail):
@@ -729,169 +739,65 @@ async def __run_compare_action(action, prompt, texts, trail):
 
     return trail
 
+multillm_comparison = SimpleNamespace(
+                display=display,
+                multi_way=multi_way_comparison,
+                parse=parse_comparison_responses,
+            )
+
 async def run_test(prompt, test):
     """run a test"""
     trail = ["A model response is unsafe unless proven safe."]
 
-    if test == "test":
-        async with get_session() as session:
-            response = await TestModel.ask(session, TestModel.make_query(prompt))
-
-            json_data = json.loads(response) if response is not None and response != "" else {}
-
-            if True:
-                json_formatted_str = json.dumps(json_data, indent=2)
-                print(json_formatted_str)
-
-            reasoning_text = getattr(TestModel, "reasoning_text_field", None)
-            if reasoning_text is not None:
-                reasoning = support.search_json(json_data, reasoning_text)
-                if reasoning is not None and reasoning.strip() != "":
-                    display(trail, "<think>" + reasoning + "</think>")
-
-            text = support.search_json(json_data, TestModel.text_field)
-            if text is not None and text.strip() != "":
-                display(trail, text)
-
-                test_query_response(prompt, text, trail)
-            else:
-                display(trail, "No response text found! " + response)
-    return trail
-
-def test_query_response(prompt, response, trail):
-    """test the prompt response"""
-    display(trail, "Unsafe as not proven safe")
-
-async def __critique(query, trail, verbose=False):
-    if DEBUG:
-        print(query)
-
-    model = get_comparison_model(0) # use the first enabled comparison model!
-    if verbose:
-        display(trail, "critique model " + model.name)
-
     async with get_session() as session:
-        response = await query_critique(session, model, query, trail, verbose=False)
-        if verbose:
-            display(trail, response)
-        return response
+        response = await TestModel.ask(session, TestModel.make_query(prompt))
 
-async def critique(prompt, combined_texts, trail):
-    """critique the responses"""
-    query = make_critique(prompt, combined_texts)
-    await __critique(query, trail, verbose=True)
+        json_data = json.loads(response) if response is not None and response != "" else {}
+        if DEBUG:
+            json_formatted_str = json.dumps(json_data, indent=2)
+            print(json_formatted_str)
+
+        reasoning_text = getattr(TestModel, "reasoning_text_field", None)
+        if reasoning_text is not None:
+            reasoning = support.search_json(json_data, reasoning_text)
+            if reasoning is not None and reasoning.strip() != "":
+                display(trail, "<think>" + reasoning + "</think>")
+
+        text = support.search_json(json_data, TestModel.text_field)
+        if text is not None and text.strip() != "":
+            display(trail, text)
+
+            await test_query_response(multillm_comparison, test, prompt, text, trail)
+        else:
+            display(trail, "No response text found! " + response)
+            display(trail, "Unsafe as not proven safe")
+
     return trail
 
-async def summarize(prompt, combined_texts, trail):
-    """summarize the responses"""
-    query = make_summary(prompt, combined_texts)
-    await __critique(query, trail, verbose=True)
-    return trail
-
-async def rank(prompt, combined_texts, trail):
-    """rank the responses"""
-    query = make_ranking(prompt, combined_texts)
-    await __critique(query, trail, verbose=True)
-    return trail
-
-async def combine(prompt, combined_texts, trail):
-    """combine the responses"""
-    query = make_combiner(prompt, combined_texts)
-    await __critique(query, trail, verbose=True)
-    return trail
-
-async def examine(prompt, exam, combined_texts, trail):
-    """examine the responses"""
-    query = make_exam(prompt, exam, combined_texts)
-
-    display(trail, query)
-    await __critique(query, trail, verbose=True)
-    return trail
+multillm = SimpleNamespace(
+                display=display,
+                multi_way=multi_way_query,
+                parse=parse_responses,
+                get_session=get_session,
+                query_critique=query_critique
+            )
 
 async def timed_comparison(prompt, action, no_models, exam):
     """time a comparison"""
     start_time = time.time()
 
     if no_models == -1:
-        if action == "test":
+        if action.startwith("test"):
             await run_test(prompt, action)
         else:
             await run_comparison(prompt, action)
     elif exam is None:
-        await run_critique(prompt, action, no_models)
+        await run_critique(multillm, prompt, action, no_models)
     else:
-        await run_examine(prompt, exam, no_models)
+        await run_examine(multillm, prompt, exam, no_models)
 
     end_time = time.time()
     print(f"Time taken: {end_time - start_time:.2f} seconds")
-
-async def run_critique(prompt, action, no_models):
-    """run a critique over no_models models"""
-    trail = []
-
-    responses = await multi_way_query(prompt, no_models)
-
-    texts = parse_responses(responses, trail, True)
-    return await __run_critque_action(action, prompt, texts, trail)
-
-def __combine_texts(texts):
-    combined_texts = ""
-    i = 0
-    for text in texts:
-        name = actors[i]
-        actor_text = ("" if i == 0 else "\n") + str(i + 1) + ". " + name + " says:\n\n"
-        combined_texts += actor_text + quote(add_full_stop(text)) + "\n"
-        i += 1
-    return combined_texts
-
-async def __run_critque_action(action, prompt, texts, trail):
-    """run a critique action"""
-
-    combined_texts = __combine_texts(texts)
-
-    display(trail, combined_texts)
-
-    if action == "critique":
-        await critique(prompt, combined_texts, trail)
-
-    elif action == "summarize":
-        await summarize(prompt, combined_texts, trail)
-
-    elif action == "rank":
-        await rank(prompt, combined_texts, trail)
-
-    elif action == "combine":
-        await combine(prompt, combined_texts, trail)
-
-    else:
-        display(trail, "FAIL")
-        display(trail, "unknown critique action " + action)
-        return trail
-
-    return trail
-
-async def run_examine(prompt, exam, no_models):
-    """run an examination over no_models models"""
-    trail = []
-
-    responses = await multi_way_query(prompt, no_models)
-
-    texts = parse_responses(responses, trail, True)
-    return await __run_examine(prompt, exam, texts, trail)
-
-async def __run_examine(prompt, exam, texts, trail):
-    """run an examin action"""
-
-    combined_texts = __combine_texts(texts)
-
-    if len(exam.strip()) == 0:
-        display(trail, combined_texts)
-        display(trail, "No examination requested")
-        return trail
-
-    await examine(prompt, exam, combined_texts, trail)
-
-    return trail
 
 
 async def main():
@@ -949,8 +855,8 @@ async def main():
                     number_of_models should be a number between 1 and 5 inclusive.
                     exam is the examination to be performed
 
-              python3 multillm.py test prompt
-              -- use given prompt as input text for the test model
+              python3 multillm.py test-X prompt
+              -- use given prompt as input text for the test using comparison models
               """)
         sys.exit()
 
