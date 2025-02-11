@@ -6,7 +6,7 @@ mistral_api_key = support.read_file_as_string("mistral-api-key").strip()
 URL = "https://api.mistral.ai/v1/chat/completions"
 
 class Mistral(support.Model):
-    """mistral large latest - UNTESTED as sign up is failing"""
+    """mistral large latest"""
     name = "mistral"
     model = "mistral-large-latest"
     text_field = "content"
