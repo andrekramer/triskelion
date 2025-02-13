@@ -115,7 +115,7 @@ model_versions = {
 web_comparisons = ["1-way", "3-way", "3-twice", "n-way"]
 default_web_comparison = web_comparisons.index("3-way")
 
-web_critiques = ["critique", "summarize", "rank", "combine"]
+web_critiques = ["critique", "summarize", "combine", "rank"]
 default_web_critique = web_critiques.index("critique")
 
 web_tests = ["test-1", "test-2", "test-3", "test-4"]
