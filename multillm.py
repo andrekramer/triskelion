@@ -787,7 +787,7 @@ async def timed_comparison(prompt, action, no_models, exam):
     start_time = time.time()
 
     if no_models == -1:
-        if action.startwith("test"):
+        if action.startswith("test"):
             await run_test(prompt, action)
         else:
             await run_comparison(prompt, action)
