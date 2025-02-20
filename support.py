@@ -1,5 +1,6 @@
 """support for model comparisons"""
 import json
+DEBUG = False
 
 class Model:
     """Base class for all AI models"""
@@ -69,6 +70,20 @@ async def ask(url, session, query, headers):
     except Exception as e:
         print(f"An error occurred while fetching {url}: {e.__class__.__name__}")
         return "{ \"error\": \"" + e.__class__.__name__ + "\" }"
+
+async def single_shot_ask(session, model, prompt, allow_not_found=True):
+    """ask one model a single question"""
+    response = await model.ask(session, model.make_query(prompt))
+
+    json_data = json.loads(response) if response is not None and response != "" else {}
+    if DEBUG:
+        json_formatted_str = json.dumps(json_data, indent=2)
+        print(json_formatted_str)
+
+    text = search_json(json_data, model.text_field)
+    if not allow_not_found and text is None or text.strip() == "":
+        raise Exception("No response text from model")
+    return text
 
 def search_json(json_data, target_key):
     """Recursively searches a JSON object for a key."""
