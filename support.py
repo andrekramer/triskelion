@@ -102,3 +102,16 @@ def search_json(json_data, target_key):
                 if result is not None:
                     return result
     return None  # Key not found
+
+def extract_tag(text, tag):
+    """extract text between tags"""
+    start_tag = "<" + tag + ">"
+    end_tag = "</" + tag + ">"
+    start = text.find(start_tag)
+    if start == -1:
+        return None
+    start += len(start_tag)
+    end = text.find(end_tag)
+    if end == -1:
+        return None
+    return text[start:end]

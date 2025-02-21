@@ -139,11 +139,11 @@ async def agent():
         if goal_text is None or goal_text.strip() == "":
             return render_template("agent.html")
 
-        response_lines, goal, world = await process_agent(goal_text, world_text)
+        response_lines, plan, world = await process_agent(goal_text, world_text)
 
         return render_template("agent.html",
                                response=response_lines,
-                               goal=goal,
+                               goal=goal_text,
                                world=world)
 
     return render_template("agent.html")
@@ -343,7 +343,7 @@ async def process_agent(goal, world):
         result = await run_agent(multillm_agent, goal, world)
         return result
     except Exception as e:
-        return ["failed to run agent", str(e)]
+        return ["failed to run agent", str(e)], "", world
 
 if __name__ == "__main__":
     Config.set_trail_only(DEV)
