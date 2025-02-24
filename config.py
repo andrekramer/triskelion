@@ -42,7 +42,7 @@ comparison_models = [Openai, Openai2, Gemini, Gemini3, Claud, Grok2,
                      Llama, Deepseek, Deepseek2, Mistral,
                      LocalHost, Faulty]
 
-TestModel =  Gemini3 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
+TestModel =  LocalHost #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
@@ -112,7 +112,7 @@ model_versions = {
 }
 
 
-web_comparisons = ["1-way", "3-way", "3-twice", "n-way"]
+web_comparisons = ["3-way", "1-way", "none", "n-way"]
 default_web_comparison = web_comparisons.index("3-way")
 
 web_critiques = ["critique", "summarize", "combine", "rank"]

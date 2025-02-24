@@ -131,17 +131,7 @@ async def compare(session, model, comparison, trail, verbose = False):
     if comparison is None or comparison == "":
         return False
 
-    query = model.make_query(clean(comparison))
-    if DEBUG:
-        print(query)
-    response = await model.ask(session, query)
-    if response is None or response.strip() == "":
-        response = "{}"
-    json_data = json.loads(response)
-    if DEBUG:
-        json_formatted_str = json.dumps(json_data, indent=2)
-        print(json_formatted_str)
-    text = support.search_json(json_data, model.text_field)
+    text = await support.single_shot_ask(session, model, clean(comparison))
     if text is None:
         if verbose:
             display(trail, f"comparison using {model.name} failed!")
@@ -154,17 +144,7 @@ async def compare(session, model, comparison, trail, verbose = False):
 async def query_critique(session, model, critque, trail, verbose = False):
     """query for critique using given model"""
 
-    query = model.make_query(clean(critque))
-    if DEBUG:
-        print(query)
-    response = await model.ask(session, query)
-    if response is None or response.strip() == "":
-        response = "{}"
-    json_data = json.loads(response)
-    if DEBUG:
-        json_formatted_str = json.dumps(json_data, indent=2)
-        print(json_formatted_str)
-    text = support.search_json(json_data, model.text_field)
+    text = await support.single_shot_ask(session, model, model.make_query(clean(critque)))
     if text is None:
         if verbose:
             display(trail, f"critique using {model.name} failed!")
@@ -516,17 +496,10 @@ async def __ask_next_model(prompt, trail, session):
                 if DEBUG:
                     display(trail, "query next model " + model.name)
                 model3 = model
-                text3 = await __ask_next(prompt, session, model)
+                text3 = await support.single_shot_ask(session, model3, prompt)
                 break
             i += 1
     return text3,model3
-
-async def __ask_next(prompt, session, model):
-    response = await model.ask(session, model.make_query(prompt))
-    if response is not None and response.strip() != "":
-        json_data = json.loads(response)
-        return support.search_json(json_data, model.text_field)
-    return ""
 
 def n_ways(trail, verbose=False):
     """all n way combinations as pairs"""
@@ -739,10 +712,24 @@ async def __run_compare_action(action, prompt, texts, trail):
 
     return trail
 
+multillm_agent = SimpleNamespace(
+                display=display,
+                get_session=get_session,
+                multi_way=multi_way_query,
+                parse=parse_responses)
+
 multillm_comparison = SimpleNamespace(
                 display=display,
                 multi_way=multi_way_comparison,
                 parse=parse_comparison_responses,
+            )
+
+multillm = SimpleNamespace(
+                display=display,
+                multi_way=multi_way_query,
+                parse=parse_responses,
+                get_session=get_session,
+                query_critique=query_critique
             )
 
 async def run_test(prompt, test):
@@ -773,14 +760,6 @@ async def run_test(prompt, test):
             display(trail, "Unsafe as not proven safe")
 
     return trail
-
-multillm = SimpleNamespace(
-                display=display,
-                multi_way=multi_way_query,
-                parse=parse_responses,
-                get_session=get_session,
-                query_critique=query_critique
-            )
 
 async def timed_comparison(prompt, action, no_models, exam):
     """time a comparison"""
