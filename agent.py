@@ -62,6 +62,7 @@ async def run_agent(multillm, goal, world):
         multillm.display(trail, validate_response)
         if validate_response.find("PASS") == -1 or validate_response.find("FAIL") != -1:
             multillm.display(trail, "Plan is invalid")
+            # No valid change to make so return the same world
             return trail, goal, world
 
         act_prompt = make_action(plan, world)

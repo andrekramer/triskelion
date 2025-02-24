@@ -13,17 +13,18 @@ async def main():
         "\ny = 1"
     goal = "increment x by 1"
 
-    try:
-        print("-" * 80)
-        print(world)
-        print("-" * 80)
-        for i in range(STEPS):
+    world = agent.observe(f"<world>{world}</world>")
+    print("-" * 80)
+    print(world)
+    print("-" * 80)
+    for i in range(STEPS):
+        try:
             response_lines, plan, world = await agent.run_agent(multillm_agent, goal, world)
             print("-" * 80)
             print(world)
             print("-" * 80)
-    except ValueError as err:
-        print(str(err))
+        except ValueError as err:
+            print(str(err))
 
 if __name__ == "__main__":
     asyncio.run(main())
