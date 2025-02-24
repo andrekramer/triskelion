@@ -85,11 +85,7 @@ Example of responses from Web prompt (from Commit 50347e8):
 
 ## Run as an agent:
 
-The plan, validate, act loop can be run as a command line app:   
+The plan, test, act agent loop can be run as a command line app:   
 
 python act.py  
-
-
-
-
 
