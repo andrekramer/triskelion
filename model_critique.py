@@ -24,13 +24,17 @@ def __combine_texts(texts):
         i += 1
     return combined_texts
 
-async def run_examine(multillm, prompt, exam, no_models):
+async def run_examine(multillm, prompt, exam, no_models, parallel=False):
     """run an examination over no_models models"""
     trail = []
 
-    responses = await multillm.multi_way(prompt, no_models)
+    if parallel:
+        responses = await multillm.multi_way_parallel(prompt, no_models)
+        texts = multillm.parse_parallel(responses, trail, True)
+    else:
+        responses = await multillm.multi_way(prompt, no_models)
+        texts = multillm.parse(responses, trail, True)
 
-    texts = multillm.parse(responses, trail, True)
     return await __run_examine(multillm, prompt, exam, texts, trail)
 
 async def __run_examine(multillm, prompt, exam, texts, trail):

@@ -4,7 +4,7 @@ import os
 
 # new model? import here
 from gemini import Gemini, Gemini2, Gemini3
-from claud import  Claud
+from claud import  Claud, Claud2, Claud3
 from openai import Openai, Openai2, Openai3
 from grok import Grok, Grok2
 from llama import Llama, Llama2
@@ -30,7 +30,7 @@ for file in ["gemini-api-key",
 # The models and order of responses (skiping any not in schedule).
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
-models = [Gemini, Gemini2, Gemini3, Claud, Openai, Openai2, Openai3, Grok, Grok2,
+models = [Gemini, Gemini2, Gemini3, Claud, Claud2, Claud3, Openai, Openai2, Openai3, Grok, Grok2,
           Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Deepseek2, Mistral,
           LocalHost, Faulty]
 
@@ -38,11 +38,11 @@ models = [Gemini, Gemini2, Gemini3, Claud, Openai, Openai2, Openai3, Grok, Grok2
 # The models that can be used for comparisons (skipping any not in comparison schedule).
 # Order by prefence for comparisons. Need at least 3 models for 3-way comparisons.
 # Can add a model more than once but that can't be configured via the Web UI.
-comparison_models = [Openai, Openai2, Gemini, Gemini3, Claud, Grok2,
+comparison_models = [Openai, Openai2, Gemini, Gemini3, Claud, Claud2, Grok2,
                      Llama, Deepseek, Deepseek2, Mistral,
                      LocalHost, Faulty]
 
-TestModel =  LocalHost #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
+TestModel =  Claud3 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
@@ -51,12 +51,14 @@ F = False
 # Which models to query
 schedule = {
   "gemini": F,
-  "gemini2": T,
-  "gemini3": F,
+  "gemini2": F,
+  "gemini3": T,
   "openai": T,
   "openai2": F,
   "openai3": F,
   "claud": T,
+  "claud2": T,
+  "claud3": F,
   "grok": F,
   "grok2": F,
   "llama": F,
@@ -96,6 +98,8 @@ model_versions = {
   "gemini2": "gemini-2.0-flash-exp",
   "gemini3": "gemini-2.0-pro-exp-02-05",
   "claud": "claude-3-5-sonnet-20241022",
+  "claud2": "claude-3-7-sonnet-20250219",
+  "claud3": "claude-3-7-sonnet-20250219",
   "openai": "gpt-4o",
   "openai2": "o1-mini",
   "openai3": "o3-mini",
@@ -130,6 +134,8 @@ def configure():
     Gemini.model = model_versions["gemini"]
     Gemini2.model = model_versions["gemini2"]
     Claud.model = model_versions["claud"]
+    Claud2.model = model_versions["claud2"]
+    Claud3.model = model_versions["claud3"]
     Openai.model = model_versions["openai"]
     Openai2.model = model_versions["openai2"]
     Openai3.model = model_versions["openai3"]

@@ -9,7 +9,11 @@
   <div class="container">
     <h1>Triskelion: AI Model Examiner</h1>
     <form method="post">
-        <div>Query (one or more)</div><input type="number" id="no_models" name="no_models" min="1" max="5" value="{{no_models}}" required><div>models in parallel using prompt:</div>
+        <div>Query (one or more)</div>
+        <input type="number" id="no_models" name="no_models" min="1" max="5" value="{{no_models}}" required>
+        <input type="checkbox" id="parallel" name="parallel" value="1" {% if parallel %} checked {% endif %}>
+        <label for="parallel">single test model in parallel or</label>
+        <div>models using prompt:</div>
         <div class="terminal-input-group">
             <textarea name="text_prompt" rows="8" cols="60">{{ prompt }}</textarea>
         </div>

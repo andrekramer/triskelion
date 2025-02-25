@@ -108,6 +108,8 @@ async def inspect():
     if request.method == "POST":
         prompt_text = request.form["text_prompt"]
         exam_text = request.form["text_exam"]
+        parallel = request.form.get("parallel", False)
+        print("parallel " + str(parallel))
         no_models = int(request.form.get("no_models", str(DEFAULT_NO_MODELS)))
 
         if prompt_text is None or prompt_text.strip() == "" or \
@@ -116,12 +118,14 @@ async def inspect():
                 no_models = DEFAULT_NO_MODELS
 
             return render_template("examine.html",
-                                   no_models=no_models)
+                                   no_models=no_models,
+                                   parallel=parallel)
 
-        response_lines = await process_examine(prompt_text, exam_text, no_models)
+        response_lines = await process_examine(prompt_text, exam_text, no_models, parallel)
 
         return render_template("examine.html",
                                no_models=no_models,
+                               parallel=parallel,
                                response=response_lines,
                                prompt=prompt_text,
                                exam=exam_text)
@@ -318,10 +322,10 @@ async def process_critique(prompt, selected_critique, no_models):
     except Exception as e:
         return ["failed to run " + selected_critique, str(e)]
 
-async def process_examine(prompt, exam, no_models):
+async def process_examine(prompt, exam, no_models, parallel):
     """process the prompt by running an examination"""
     try:
-        result = await run_examine(multillm, prompt, exam, no_models)
+        result = await run_examine(multillm, prompt, exam, no_models, parallel)
         return result
     except Exception as e:
         return ["failed to run examine", str(e)]

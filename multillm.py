@@ -45,6 +45,19 @@ async def multi_way_query(prompt, max_models = MAX_NO_MODELS):
 
     return responses
 
+async def multi_way_parallel(prompt, max_models = MAX_NO_MODELS):
+    """ Query the configured test model in parallel N times """
+    promises = []
+    async with get_session() as session:
+        for _ in range(max_models):
+
+            promise = TestModel.ask(session, TestModel.make_query(prompt))
+            promises.append(promise)
+
+        responses = await asyncio.gather(*promises)
+
+    return responses
+
 async def multi_way_comparison(prompt, max_models = MAX_NO_MODELS):
     """Query the configured comparison models in parallel and gather the responses"""
     promises = []
@@ -85,6 +98,14 @@ def parse_responses(responses, trail, verbose=False):
         i += 1
         if i == len(responses):
             break
+    return response_texts
+
+def parse_parallel_responses(responses, trail, verbose=False):
+    """Parsing out the model specific text field. Display responses if display flag is True"""
+    response_texts = []
+    for response in responses:
+        parse_response(trail, verbose, response_texts, TestModel, response)
+
     return response_texts
 
 def parse_comparison_responses(responses, trail, verbose=False):
@@ -727,7 +748,9 @@ multillm_comparison = SimpleNamespace(
 multillm = SimpleNamespace(
                 display=display,
                 multi_way=multi_way_query,
+                multi_way_parallel=multi_way_parallel,
                 parse=parse_responses,
+                parse_parallel=parse_parallel_responses,
                 get_session=get_session,
                 query_critique=query_critique
             )

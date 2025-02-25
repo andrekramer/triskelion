@@ -75,5 +75,4 @@ async def run_agent(multillm, goal, world):
     if world2 is None:
         raise ValueError("No world returned")
 
-
     return trail, plan, world

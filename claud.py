@@ -26,3 +26,27 @@ class Claud(support.Model):
           "anthropic-version": "2023-06-01"
         }
         return await support.ask(URL, session, query, headers)
+
+class Claud2(Claud):
+    """Claud AI 3.7 Model"""
+    name = "claud2"
+    model = "claude-3-7-sonnet-20250219"
+
+class Claud3(Claud):
+    """Claud AI Model 3.7 Thinking"""
+    name = "claud3"
+    # model = "claude-3-7-sonnet-20250219" same as Claud2
+    reasoning_text_field = "thinking"
+
+    @classmethod
+    def make_query(cls, text):
+        """make claud query with thinking"""
+        obj = {
+            "model": cls.model, 
+            "max_tokens": 20000,
+            "thinking": {
+                 "type": "enabled",
+                 "budget_tokens": 10000
+            }
+        }
+        return support.make_std_query_from_object(obj, text)
