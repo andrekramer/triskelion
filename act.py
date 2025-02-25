@@ -11,7 +11,7 @@ async def main():
 
     world = "x = 1" + \
         "\ny = 1"
-    goal = "increment x by 1"
+    goal = "x incremented by one"
 
     world = agent.observe(f"<world>{world}</world>")
     print("-" * 80)

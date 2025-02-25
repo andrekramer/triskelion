@@ -85,6 +85,8 @@ Example of responses from Web prompt (from Commit 50347e8):
 
 ## Run as an agent:
 
+https://andrekramermsc.substack.com/p/triskelion-as-agent   
+
 The plan, test, act agent loop can be run as a command line app:   
 
 python act.py  
