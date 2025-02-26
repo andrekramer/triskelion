@@ -91,3 +91,5 @@ The plan, test, act agent loop can be run as a command line app:
 
 python act.py  
 
+The goal is in the goal.txt file and world.txt contains the initial world state.  
+

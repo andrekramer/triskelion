@@ -143,7 +143,7 @@ async def agent():
         if goal_text is None or goal_text.strip() == "":
             return render_template("agent.html")
 
-        response_lines, plan, world = await process_agent(goal_text, world_text)
+        response_lines, plan, world, done = await process_agent(goal_text, world_text)
 
         return render_template("agent.html",
                                response=response_lines,
