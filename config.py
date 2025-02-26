@@ -56,7 +56,7 @@ schedule = {
   "openai": T,
   "openai2": F,
   "openai3": F,
-  "claud": T,
+  "claud": F,
   "claud2": T,
   "claud3": F,
   "grok": F,
