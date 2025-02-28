@@ -763,7 +763,7 @@ async def run_test(prompt, test):
         response = await TestModel.ask(session, TestModel.make_query(prompt))
 
         json_data = json.loads(response) if response is not None and response != "" else {}
-        if DEBUG:
+        if True:
             json_formatted_str = json.dumps(json_data, indent=2)
             print(json_formatted_str)
 

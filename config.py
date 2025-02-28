@@ -5,7 +5,7 @@ import os
 # new model? import here
 from gemini import Gemini, Gemini2, Gemini3
 from claud import  Claud, Claud2, Claud3
-from openai import Openai, Openai2, Openai3
+from openai import Openai, Openai2, Openai3, Openai4
 from grok import Grok, Grok2
 from llama import Llama, Llama2
 from hugface import HugFace, HugFace2, HugFace3
@@ -30,7 +30,8 @@ for file in ["gemini-api-key",
 # The models and order of responses (skiping any not in schedule).
 # Need at least 3 different models for 3 way comparisons.
 # Order by preference for answers.
-models = [Gemini, Gemini2, Gemini3, Claud, Claud2, Claud3, Openai, Openai2, Openai3, Grok, Grok2,
+models = [Gemini, Gemini2, Gemini3, Claud, Claud2, Claud3,
+          Openai, Openai2, Openai3, Openai4, Grok, Grok2,
           Llama, Llama2, HugFace, HugFace2, HugFace3, Deepseek, Deepseek2, Mistral,
           LocalHost, Faulty]
 
@@ -42,7 +43,7 @@ comparison_models = [Openai, Openai2, Gemini, Gemini3, Claud, Claud2, Grok2,
                      Llama, Deepseek, Deepseek2, Mistral,
                      LocalHost, Faulty]
 
-TestModel =  Claud3 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
+TestModel =  Gemini3 #  LocalHost, or say Openai3 (o3-mini currently needs high tier API key)
 
 T = True
 F = False
@@ -56,6 +57,7 @@ schedule = {
   "openai": T,
   "openai2": F,
   "openai3": F,
+  "openai4": F,
   "claud": F,
   "claud2": T,
   "claud3": F,
@@ -104,6 +106,7 @@ model_versions = {
   "openai": "gpt-4o",
   "openai2": "o1-mini",
   "openai3": "o3-mini",
+  "openai4": "gpt-4.5-preview",
   "grok": "grok-beta",
   "grok2": "grok-2-latest",
   "llama": "llama3.3-70b",
