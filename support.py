@@ -62,7 +62,7 @@ async def ask(url, session, query, headers):
     """ask via async http post"""
     try:
         async with session.post(url, data=query.encode(), headers=headers) as response:
-            print(f"Fetched {url}: Status code {response.status}")
+            print(f"Fetch {url}: Status code {response.status}")
             if response.status != 200:
                 print(f"Error while fetching {url}: {response.status}")
                 return "{\"error\": " + str(response.status) + "}"
@@ -81,7 +81,7 @@ async def single_shot_ask(session, model, prompt, allow_not_found=True):
         print(json_formatted_str)
 
     text = search_json(json_data, model.text_field)
-    if not allow_not_found and text is None or text.strip() == "":
+    if not allow_not_found and (text is None or text.strip() == ""):
         raise Exception("No response text from model")
     return text
 
